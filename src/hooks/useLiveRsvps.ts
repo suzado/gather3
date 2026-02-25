@@ -1,6 +1,5 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
-import { subscribeToEntityEvents } from "@/lib/arkiv/subscriptions";
 import { getRsvpsForEvent } from "@/lib/arkiv/rsvp";
 import type { RsvpEntity } from "@/lib/arkiv/types";
 import type { Hex } from "viem";
@@ -12,11 +11,13 @@ interface LiveRsvpEvent {
   timestamp: number;
 }
 
+const POLL_INTERVAL = 5000;
+
 export function useLiveRsvps(eventKey: Hex | null) {
   const [rsvps, setRsvps] = useState<RsvpEntity[]>([]);
   const [liveEvents, setLiveEvents] = useState<LiveRsvpEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const unsubRef = useRef<(() => void) | null>(null);
+  const knownKeysRef = useRef<Set<string>>(new Set());
 
   const refetch = useCallback(() => {
     if (!eventKey) return;
@@ -31,45 +32,54 @@ export function useLiveRsvps(eventKey: Hex | null) {
       return;
     }
 
-    setLoading(true);
-    getRsvpsForEvent(eventKey)
-      .then(setRsvps)
-      .finally(() => setLoading(false));
-
-    // Subscribe to real-time entity events
     let cancelled = false;
-    subscribeToEntityEvents(
-      (event) => {
+
+    // Initial fetch
+    getRsvpsForEvent(eventKey)
+      .then((initialRsvps) => {
         if (cancelled) return;
-        setLiveEvents((prev) => [
-          { type: "joined", entityKey: event.entityKey, owner: event.owner, timestamp: Date.now() },
-          ...prev.slice(0, 19),
-        ]);
-        getRsvpsForEvent(eventKey)
-          .then(setRsvps)
-          .catch(() => {});
-      },
-      () => {
+        setRsvps(initialRsvps);
+        knownKeysRef.current = new Set(initialRsvps.map((r) => r.entityKey));
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    // Poll for new RSVPs
+    const interval = setInterval(async () => {
+      if (cancelled) return;
+      try {
+        const currentRsvps = await getRsvpsForEvent(eventKey);
         if (cancelled) return;
-        getRsvpsForEvent(eventKey)
-          .then(setRsvps)
-          .catch(() => {});
-      },
-      5000
-    ).then((unsub) => {
-      if (cancelled) {
-        unsub();
-      } else {
-        unsubRef.current = unsub;
+
+        setRsvps(currentRsvps);
+
+        // Detect new RSVPs by comparing entity keys
+        const newRsvps = currentRsvps.filter(
+          (r) => !knownKeysRef.current.has(r.entityKey)
+        );
+
+        if (newRsvps.length > 0) {
+          setLiveEvents((prev) => [
+            ...newRsvps.map((r) => ({
+              type: "joined" as const,
+              entityKey: r.entityKey as Hex,
+              owner: r.owner as Hex,
+              timestamp: Date.now(),
+            })),
+            ...prev.slice(0, 19 - newRsvps.length),
+          ]);
+        }
+
+        knownKeysRef.current = new Set(currentRsvps.map((r) => r.entityKey));
+      } catch {
+        // ignore polling errors
       }
-    });
+    }, POLL_INTERVAL);
 
     return () => {
       cancelled = true;
-      if (unsubRef.current) {
-        unsubRef.current();
-        unsubRef.current = null;
-      }
+      clearInterval(interval);
     };
   }, [eventKey]);
 

@@ -17,6 +17,13 @@ import { APP_ID } from "@/lib/utils/constants";
 const ENTITY_TYPE = "event";
 const BUFFER_DAYS = 30;
 
+// SDK divides expiresIn by BLOCK_TIME (2) internally, so odd values cause
+// a BigInt conversion error. Round up to the nearest even number.
+function safeExpiresIn(expiresIn: number): number {
+  const floored = Math.floor(expiresIn);
+  return floored % 2 === 0 ? floored : floored + 1;
+}
+
 export async function createEvent(
   walletClient: ArkivWalletClient,
   data: EventPayload,
@@ -42,7 +49,7 @@ export async function createEvent(
       { key: "capacity", value: data.capacity },
       { key: "city", value: city },
     ],
-    expiresIn: ExpirationTime.fromDate(expirationDate),
+    expiresIn: safeExpiresIn(ExpirationTime.fromDate(expirationDate)),
   });
 
   return { entityKey, txHash };
@@ -76,7 +83,7 @@ export async function updateEvent(
       { key: "capacity", value: data.capacity },
       { key: "city", value: city },
     ],
-    expiresIn: ExpirationTime.fromDate(expirationDate),
+    expiresIn: safeExpiresIn(ExpirationTime.fromDate(expirationDate)),
   });
 
   return { txHash };
@@ -111,7 +118,7 @@ export async function updateEventStatus(
       { key: "capacity", value: attrs.capacity as number },
       { key: "city", value: attrs.city as string },
     ],
-    expiresIn: ExpirationTime.fromDate(expirationDate),
+    expiresIn: safeExpiresIn(ExpirationTime.fromDate(expirationDate)),
   });
 
   return { txHash };

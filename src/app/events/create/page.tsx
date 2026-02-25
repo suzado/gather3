@@ -8,6 +8,7 @@ import { motion } from "framer-motion";
 import { Wallet, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageTransition } from "@/components/layout/PageTransition";
+import { TestnetBanner } from "@/components/common/TestnetBanner";
 import { EventForm } from "@/components/events/EventForm";
 import { OrganizerForm } from "@/components/organizer/OrganizerForm";
 import { useWalletAddress } from "@/hooks/useArkivClient";
@@ -59,6 +60,7 @@ export default function CreateEventPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
+            <TestnetBanner />
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Set Up Your Profile</h1>
               <p className="text-muted-foreground">
@@ -80,6 +82,7 @@ export default function CreateEventPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
+            <TestnetBanner />
             <div className="mb-8">
               <div className="flex items-center justify-between flex-wrap gap-4">
                 <div>

@@ -171,7 +171,14 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
       onSuccess(entityKey);
     } catch (err) {
       console.error("Event creation error:", err);
-      toast.error("Failed to create event. Please try again.");
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.toLowerCase().includes("insufficient funds") || message.toLowerCase().includes("insufficient balance")) {
+        toast.error("Insufficient funds. You need testnet ETH for gas fees. Visit the Arkiv Mendoza faucet to get some.", { duration: 8000 });
+      } else if (message.includes("User denied") || message.includes("user rejected")) {
+        toast.error("Transaction was cancelled.");
+      } else {
+        toast.error("Failed to create event. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -549,6 +556,7 @@ function StepSettings({ form }: { form: any }) {
                 min={1}
                 className="glass border-white/10"
                 {...field}
+                onChange={(e) => (field.onChange as (value: number) => void)(e.target.valueAsNumber)}
               />
             </FormControl>
             <FormDescription>Maximum number of attendees</FormDescription>

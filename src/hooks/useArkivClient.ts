@@ -12,7 +12,7 @@ export function useArkivWallet() {
 
   const arkivWallet = useMemo(() => {
     if (!walletClient?.account) return null;
-    return createArkivWallet(walletClient.account);
+    return createArkivWallet(walletClient);
   }, [walletClient]);
 
   return arkivWallet;
