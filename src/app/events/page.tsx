@@ -9,11 +9,19 @@ import { EventFilters } from "@/components/events/EventFilters";
 import { EventGrid } from "@/components/events/EventGrid";
 import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
+import { useFuseSearch } from "@/hooks/useFuseSearch";
 import type { EventFilters as EventFiltersType } from "@/lib/arkiv/types";
 
 export default function EventsPage() {
   const [filters, setFilters] = useState<EventFiltersType>({});
+  const [searchQuery, setSearchQuery] = useState("");
   const { events, loading, error } = useEvents(filters);
+  const { results: filteredEvents, hasQuery, resultCount } = useFuseSearch(events, searchQuery);
+
+  const hasActiveFilters =
+    Object.keys(filters).some(
+      (key) => filters[key as keyof EventFiltersType] !== undefined
+    ) || searchQuery.trim().length > 0;
 
   return (
     <PageTransition>
@@ -51,7 +59,12 @@ export default function EventsPage() {
 
             {/* Filters */}
             <div className="glass rounded-2xl p-5">
-              <EventFilters filters={filters} onFiltersChange={setFilters} />
+              <EventFilters
+                filters={filters}
+                onFiltersChange={setFilters}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+              />
             </div>
           </motion.div>
 
@@ -66,23 +79,40 @@ export default function EventsPage() {
             </motion.div>
           )}
 
+          {/* Result count */}
+          {hasQuery && !loading && (
+            <motion.p
+              initial={{ opacity: 0, y: -4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-muted-foreground mb-4"
+            >
+              {resultCount} {resultCount === 1 ? "event" : "events"} matching{" "}
+              <span className="text-violet-400">&ldquo;{searchQuery.trim()}&rdquo;</span>
+            </motion.p>
+          )}
+
           {/* Event grid */}
           <EventGrid
-            events={events}
+            events={filteredEvents}
             loading={loading}
-            emptyTitle="No events found"
-            emptyDescription="Try adjusting your filters or check back later for new events."
+            emptyTitle={hasQuery ? "No matching events" : "No events found"}
+            emptyDescription={
+              hasQuery
+                ? `No events match "${searchQuery.trim()}". Try a different search term.`
+                : "Try adjusting your filters or check back later for new events."
+            }
             emptyAction={
-              Object.keys(filters).some(
-                (key) => filters[key as keyof EventFiltersType] !== undefined
-              ) ? (
+              hasActiveFilters ? (
                 <Button
                   variant="outline"
-                  onClick={() => setFilters({})}
+                  onClick={() => {
+                    setFilters({});
+                    setSearchQuery("");
+                  }}
                   className="border-white/10 hover:bg-white/5"
                 >
                   <Search className="h-4 w-4 mr-2" />
-                  Clear Filters
+                  Clear All
                 </Button>
               ) : undefined
             }

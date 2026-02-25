@@ -1,14 +1,18 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { Search, X } from "lucide-react";
 import { EVENT_CATEGORIES, LOCATION_TYPES, EVENT_STATUSES } from "@/lib/utils/constants";
 import type { EventCategory, LocationType, EventStatus } from "@/lib/utils/constants";
 import type { EventFilters as EventFiltersType } from "@/lib/arkiv/types";
+import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface EventFiltersProps {
   filters: EventFiltersType;
   onFiltersChange: (filters: EventFiltersType) => void;
+  searchQuery: string;
+  onSearchChange: (query: string) => void;
 }
 
 interface FilterChipProps {
@@ -47,7 +51,7 @@ function FilterChip({ label, selected, onClick }: FilterChipProps) {
   );
 }
 
-export function EventFilters({ filters, onFiltersChange }: EventFiltersProps) {
+export function EventFilters({ filters, onFiltersChange, searchQuery, onSearchChange }: EventFiltersProps) {
   const toggleCategory = (value: EventCategory) => {
     onFiltersChange({
       ...filters,
@@ -71,6 +75,31 @@ export function EventFilters({ filters, onFiltersChange }: EventFiltersProps) {
 
   return (
     <div className="space-y-4">
+      {/* Search bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/50" />
+        <Input
+          type="text"
+          placeholder="Search events by name, description, tags, location..."
+          value={searchQuery}
+          onChange={(e) => onSearchChange(e.target.value)}
+          className={cn(
+            "pl-10 pr-10 h-10",
+            "bg-white/[0.03] border-white/[0.08]",
+            "placeholder:text-muted-foreground/40",
+            "focus-visible:border-violet-500/50 focus-visible:ring-violet-500/20"
+          )}
+        />
+        {searchQuery && (
+          <button
+            onClick={() => onSearchChange("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-foreground/80 transition-colors"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        )}
+      </div>
+
       {/* Category filters */}
       <div className="space-y-2">
         <span className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider">
