@@ -29,6 +29,7 @@ import { useWalletAddress } from "@/hooks/useArkivClient";
 import { useLiveRsvps } from "@/hooks/useLiveRsvps";
 import { LiveRsvpFeed } from "@/components/rsvp/LiveRsvpFeed";
 import { EventManagePanel } from "@/components/events/EventManagePanel";
+import { AddToCalendarButton } from "@/components/events/AddToCalendarButton";
 import { useCoverImage } from "@/hooks/useCoverImage";
 import { useAccount } from "wagmi";
 import {
@@ -363,6 +364,27 @@ export default function EventDetailPage({
                   <p className="text-xs text-muted-foreground text-center">
                     This event has {event.status === "cancelled" ? "been cancelled" : "ended"}.
                   </p>
+                )}
+
+                {/* Add to Calendar */}
+                {!isEventOver && (
+                  <>
+                    <Separator className="bg-white/[0.06]" />
+                    <div className="flex justify-center">
+                      <AddToCalendarButton
+                        event={{
+                          title: event.title,
+                          description: event.description,
+                          startDate: event.startDate,
+                          endDate: event.endDate,
+                          timezone: event.timezone,
+                          location: event.location,
+                          venue: event.venue,
+                          entityKey: event.entityKey,
+                        }}
+                      />
+                    </div>
+                  </>
                 )}
 
                 {/* Live RSVP Feed */}
