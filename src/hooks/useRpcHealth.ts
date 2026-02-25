@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { mendoza } from "@/lib/wallet/config";
+import { subscribe as subscribeRpcTracker } from "@/lib/arkiv/rpcTracker";
 
 const POLL_INTERVAL = 30_000;
 const REQUEST_TIMEOUT = 8_000;
@@ -11,6 +12,7 @@ export function useRpcHealth() {
   const [isUnhealthy, setIsUnhealthy] = useState(false);
   const failureCount = useRef(0);
 
+  // Periodic eth_chainId health check (baseline)
   const checkHealth = useCallback(async () => {
     const rpcUrl = mendoza.rpcUrls.default.http[0];
     const controller = new AbortController();
@@ -52,6 +54,19 @@ export function useRpcHealth() {
     const intervalId = setInterval(checkHealth, POLL_INTERVAL);
     return () => clearInterval(intervalId);
   }, [checkHealth]);
+
+  // Subscribe to real arkiv_query failures from rpcTracker
+  useEffect(() => {
+    return subscribeRpcTracker((trackerUnhealthy) => {
+      if (trackerUnhealthy) {
+        failureCount.current = FAILURE_THRESHOLD;
+        setIsUnhealthy(true);
+      } else {
+        failureCount.current = 0;
+        setIsUnhealthy(false);
+      }
+    });
+  }, []);
 
   return isUnhealthy;
 }

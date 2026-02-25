@@ -3,6 +3,7 @@ import { ExpirationTime } from "@arkiv-network/sdk/utils";
 import { eq, gt, lt, or } from "@arkiv-network/sdk/query";
 import { desc } from "@arkiv-network/sdk/query";
 import { arkivPublic } from "./client";
+import { trackedFetch } from "./rpcTracker";
 import type { ArkivWalletClient } from "./client";
 import type {
   EventPayload,
@@ -94,7 +95,7 @@ export async function updateEventStatus(
   entityKey: Hex,
   newStatus: EventStatus
 ) {
-  const entity = await arkivPublic.getEntity(entityKey);
+  const entity = await trackedFetch(arkivPublic.getEntity(entityKey));
   const data = entity.toJson() as EventPayload;
   const attrs = Object.fromEntries(
     entity.attributes.map((a: { key: string; value: string | number }) => [a.key, a.value])
@@ -148,7 +149,7 @@ export async function getEvent(
   entityKey: Hex
 ): Promise<EventEntity | null> {
   try {
-    const entity = await arkivPublic.getEntity(entityKey);
+    const entity = await trackedFetch(arkivPublic.getEntity(entityKey));
     return parseEventEntity(entity);
   } catch {
     return null;
@@ -181,7 +182,7 @@ export async function queryEvents(
     query = query.ownedBy(filters.ownerWallet);
   }
 
-  const result = await query.fetch();
+  const result = await trackedFetch(query.fetch());
   return result.entities.map(parseEventEntity).slice(0, limit);
 }
 
@@ -200,10 +201,12 @@ export async function queryLiveEvents(limit = 20): Promise<EventEntity[]> {
 }
 
 export async function getRsvpCount(eventKey: Hex): Promise<number> {
-  return arkivPublic
-    .buildQuery()
-    .where([eq("app", APP_ID), eq("type", "rsvp"), eq("eventKey", eventKey), eq("status", "confirmed")])
-    .count();
+  return trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([eq("app", APP_ID), eq("type", "rsvp"), eq("eventKey", eventKey), eq("status", "confirmed")])
+      .count()
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

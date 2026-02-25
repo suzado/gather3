@@ -2,6 +2,7 @@ import { jsonToPayload } from "@arkiv-network/sdk/utils";
 import { ExpirationTime } from "@arkiv-network/sdk/utils";
 import { eq } from "@arkiv-network/sdk/query";
 import { arkivPublic } from "./client";
+import { trackedFetch } from "./rpcTracker";
 import type { ArkivWalletClient } from "./client";
 import type { OrganizerPayload, OrganizerEntity } from "./types";
 import type { Hex } from "viem";
@@ -65,17 +66,19 @@ export async function updateOrganizer(
 export async function getOrganizerByWallet(
   walletAddress: string
 ): Promise<OrganizerEntity | null> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("wallet", walletAddress.toLowerCase()),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .withMetadata(true)
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("wallet", walletAddress.toLowerCase()),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .withMetadata(true)
+      .fetch()
+  );
 
   if (result.entities.length === 0) return null;
 
@@ -86,7 +89,7 @@ export async function getOrganizerByKey(
   entityKey: Hex
 ): Promise<OrganizerEntity | null> {
   try {
-    const entity = await arkivPublic.getEntity(entityKey);
+    const entity = await trackedFetch(arkivPublic.getEntity(entityKey));
     return parseOrganizerEntity(entity);
   } catch {
     return null;

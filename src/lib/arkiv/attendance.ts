@@ -3,6 +3,7 @@ import { ExpirationTime } from "@arkiv-network/sdk/utils";
 import { eq } from "@arkiv-network/sdk/query";
 import { desc } from "@arkiv-network/sdk/query";
 import { arkivPublic } from "./client";
+import { trackedFetch } from "./rpcTracker";
 import type { ArkivWalletClient } from "./client";
 import type { AttendancePayload, AttendanceEntity } from "./types";
 import type { Hex } from "viem";
@@ -39,17 +40,19 @@ export async function getAttendanceForEvent(
   eventKey: Hex,
   limit = 200
 ): Promise<AttendanceEntity[]> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .orderBy(desc("checkedInAt", "number"))
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .orderBy(desc("checkedInAt", "number"))
+      .fetch()
+  );
 
   return result.entities.map(parseAttendanceEntity).slice(0, limit);
 }
@@ -58,28 +61,32 @@ export async function hasAttendeeCheckedIn(
   eventKey: Hex,
   attendeeWallet: string
 ): Promise<boolean> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-      eq("attendeeWallet", attendeeWallet.toLowerCase()),
-    ])
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+        eq("attendeeWallet", attendeeWallet.toLowerCase()),
+      ])
+      .fetch()
+  );
 
   return result.entities.length > 0;
 }
 
 export async function getAttendanceCount(eventKey: Hex): Promise<number> {
-  return arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-    ])
-    .count();
+  return trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+      ])
+      .count()
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

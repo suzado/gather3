@@ -3,6 +3,7 @@ import { ExpirationTime } from "@arkiv-network/sdk/utils";
 import { eq } from "@arkiv-network/sdk/query";
 import { desc } from "@arkiv-network/sdk/query";
 import { arkivPublic } from "./client";
+import { trackedFetch } from "./rpcTracker";
 import type { ArkivWalletClient } from "./client";
 import type { RsvpPayload, RsvpEntity, EventEntity } from "./types";
 import type { RsvpStatus } from "@/lib/utils/constants";
@@ -61,19 +62,21 @@ export async function getRsvpsForEvent(
   eventKey: Hex,
   limit = 100
 ): Promise<RsvpEntity[]> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-      eq("status", "confirmed"),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .withMetadata(true)
-    .orderBy(desc("rsvpDate", "number"))
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+        eq("status", "confirmed"),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .withMetadata(true)
+      .orderBy(desc("rsvpDate", "number"))
+      .fetch()
+  );
 
   return result.entities.map(parseRsvpEntity).slice(0, limit);
 }
@@ -82,19 +85,21 @@ export async function getMyRsvps(
   walletAddress: string,
   limit = 50
 ): Promise<RsvpEntity[]> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("attendeeWallet", walletAddress.toLowerCase()),
-      eq("status", "confirmed"),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .withMetadata(true)
-    .orderBy(desc("rsvpDate", "number"))
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("attendeeWallet", walletAddress.toLowerCase()),
+        eq("status", "confirmed"),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .withMetadata(true)
+      .orderBy(desc("rsvpDate", "number"))
+      .fetch()
+  );
 
   return result.entities.map(parseRsvpEntity).slice(0, limit);
 }
@@ -103,50 +108,56 @@ export async function hasUserRsvpd(
   eventKey: Hex,
   walletAddress: string
 ): Promise<RsvpEntity | null> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-      eq("attendeeWallet", walletAddress.toLowerCase()),
-      eq("status", "confirmed"),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+        eq("attendeeWallet", walletAddress.toLowerCase()),
+        eq("status", "confirmed"),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .fetch()
+  );
 
   if (result.entities.length === 0) return null;
   return parseRsvpEntity(result.entities[0]);
 }
 
 export async function queryRecentRsvps(limit = 10): Promise<RsvpEntity[]> {
-  const result = await arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("status", "confirmed"),
-    ])
-    .withAttributes(true)
-    .withPayload(true)
-    .withMetadata(true)
-    .orderBy(desc("rsvpDate", "number"))
-    .fetch();
+  const result = await trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("status", "confirmed"),
+      ])
+      .withAttributes(true)
+      .withPayload(true)
+      .withMetadata(true)
+      .orderBy(desc("rsvpDate", "number"))
+      .fetch()
+  );
 
   return result.entities.map(parseRsvpEntity).slice(0, limit);
 }
 
 export async function getRsvpCount(eventKey: Hex): Promise<number> {
-  return arkivPublic
-    .buildQuery()
-    .where([
-      eq("app", APP_ID),
-      eq("type", ENTITY_TYPE),
-      eq("eventKey", eventKey),
-      eq("status", "confirmed"),
-    ])
-    .count();
+  return trackedFetch(
+    arkivPublic
+      .buildQuery()
+      .where([
+        eq("app", APP_ID),
+        eq("type", ENTITY_TYPE),
+        eq("eventKey", eventKey),
+        eq("status", "confirmed"),
+      ])
+      .count()
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
