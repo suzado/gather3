@@ -120,6 +120,23 @@ export async function hasUserRsvpd(
   return parseRsvpEntity(result.entities[0]);
 }
 
+export async function queryRecentRsvps(limit = 10): Promise<RsvpEntity[]> {
+  const result = await arkivPublic
+    .buildQuery()
+    .where([
+      eq("app", APP_ID),
+      eq("type", ENTITY_TYPE),
+      eq("status", "confirmed"),
+    ])
+    .withAttributes(true)
+    .withPayload(true)
+    .withMetadata(true)
+    .orderBy(desc("rsvpDate", "number"))
+    .fetch();
+
+  return result.entities.map(parseRsvpEntity).slice(0, limit);
+}
+
 export async function getRsvpCount(eventKey: Hex): Promise<number> {
   return arkivPublic
     .buildQuery()
