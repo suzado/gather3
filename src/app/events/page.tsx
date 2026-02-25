@@ -1,0 +1,94 @@
+"use client";
+
+import { useState } from "react";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { ArrowRight, Search } from "lucide-react";
+import { PageTransition } from "@/components/layout/PageTransition";
+import { EventFilters } from "@/components/events/EventFilters";
+import { EventGrid } from "@/components/events/EventGrid";
+import { Button } from "@/components/ui/button";
+import { useEvents } from "@/hooks/useEvents";
+import type { EventFilters as EventFiltersType } from "@/lib/arkiv/types";
+
+export default function EventsPage() {
+  const [filters, setFilters] = useState<EventFiltersType>({});
+  const { events, loading, error } = useEvents(filters);
+
+  return (
+    <PageTransition>
+      <section className="relative">
+        {/* Background gradient */}
+        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,rgba(139,92,246,0.1),transparent_60%)]" />
+
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+          {/* Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+            className="mb-10"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+                  <span className="gradient-text">Discover</span> Events
+                </h1>
+                <p className="mt-2 text-muted-foreground">
+                  Browse decentralized events owned by their organizers.
+                </p>
+              </div>
+              <Link href="/events/create">
+                <Button
+                  variant="outline"
+                  className="border-white/10 hover:bg-white/5"
+                >
+                  Create Event
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+
+            {/* Filters */}
+            <div className="glass rounded-2xl p-5">
+              <EventFilters filters={filters} onFiltersChange={setFilters} />
+            </div>
+          </motion.div>
+
+          {/* Error state */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mb-6 rounded-xl bg-red-500/10 border border-red-500/20 p-4 text-sm text-red-400"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          {/* Event grid */}
+          <EventGrid
+            events={events}
+            loading={loading}
+            emptyTitle="No events found"
+            emptyDescription="Try adjusting your filters or check back later for new events."
+            emptyAction={
+              Object.keys(filters).some(
+                (key) => filters[key as keyof EventFiltersType] !== undefined
+              ) ? (
+                <Button
+                  variant="outline"
+                  onClick={() => setFilters({})}
+                  className="border-white/10 hover:bg-white/5"
+                >
+                  <Search className="h-4 w-4 mr-2" />
+                  Clear Filters
+                </Button>
+              ) : undefined
+            }
+          />
+        </div>
+      </section>
+    </PageTransition>
+  );
+}

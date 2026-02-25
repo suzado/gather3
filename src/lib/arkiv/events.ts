@@ -1,0 +1,226 @@
+import { jsonToPayload } from "@arkiv-network/sdk/utils";
+import { ExpirationTime } from "@arkiv-network/sdk/utils";
+import { eq, gt, lt, or } from "@arkiv-network/sdk/query";
+import { desc } from "@arkiv-network/sdk/query";
+import { arkivPublic } from "./client";
+import type { ArkivWalletClient } from "./client";
+import type {
+  EventPayload,
+  EventEntity,
+  EventFilters,
+} from "./types";
+import type { EventStatus, EventCategory, LocationType } from "@/lib/utils/constants";
+import type { Hex } from "viem";
+import { nowUnix } from "@/lib/utils/dates";
+
+const ENTITY_TYPE = "event";
+const BUFFER_DAYS = 30;
+
+export async function createEvent(
+  walletClient: ArkivWalletClient,
+  data: EventPayload,
+  organizerKey: string,
+  category: string,
+  locationType: string,
+  city: string
+) {
+  const expirationDate = new Date((data.endDate + BUFFER_DAYS * 86400) * 1000);
+
+  const { entityKey, txHash } = await walletClient.createEntity({
+    payload: jsonToPayload(data),
+    contentType: "application/json",
+    attributes: [
+      { key: "type", value: ENTITY_TYPE },
+      { key: "organizerKey", value: organizerKey },
+      { key: "status", value: "upcoming" as EventStatus },
+      { key: "category", value: category },
+      { key: "locationType", value: locationType },
+      { key: "startDate", value: data.startDate },
+      { key: "endDate", value: data.endDate },
+      { key: "capacity", value: data.capacity },
+      { key: "city", value: city },
+    ],
+    expiresIn: ExpirationTime.fromDate(expirationDate),
+  });
+
+  return { entityKey, txHash };
+}
+
+export async function updateEvent(
+  walletClient: ArkivWalletClient,
+  entityKey: Hex,
+  data: EventPayload,
+  organizerKey: string,
+  status: EventStatus,
+  category: string,
+  locationType: string,
+  city: string
+) {
+  const expirationDate = new Date((data.endDate + BUFFER_DAYS * 86400) * 1000);
+
+  const { txHash } = await walletClient.updateEntity({
+    entityKey,
+    payload: jsonToPayload(data),
+    contentType: "application/json",
+    attributes: [
+      { key: "type", value: ENTITY_TYPE },
+      { key: "organizerKey", value: organizerKey },
+      { key: "status", value: status },
+      { key: "category", value: category },
+      { key: "locationType", value: locationType },
+      { key: "startDate", value: data.startDate },
+      { key: "endDate", value: data.endDate },
+      { key: "capacity", value: data.capacity },
+      { key: "city", value: city },
+    ],
+    expiresIn: ExpirationTime.fromDate(expirationDate),
+  });
+
+  return { txHash };
+}
+
+export async function updateEventStatus(
+  walletClient: ArkivWalletClient,
+  entityKey: Hex,
+  newStatus: EventStatus
+) {
+  const entity = await arkivPublic.getEntity(entityKey);
+  const data = entity.toJson() as EventPayload;
+  const attrs = Object.fromEntries(
+    entity.attributes.map((a: { key: string; value: string | number }) => [a.key, a.value])
+  );
+
+  const expirationDate = new Date((data.endDate + BUFFER_DAYS * 86400) * 1000);
+
+  const { txHash } = await walletClient.updateEntity({
+    entityKey,
+    payload: jsonToPayload(data),
+    contentType: "application/json",
+    attributes: [
+      { key: "type", value: ENTITY_TYPE },
+      { key: "organizerKey", value: attrs.organizerKey as string },
+      { key: "status", value: newStatus },
+      { key: "category", value: attrs.category as string },
+      { key: "locationType", value: attrs.locationType as string },
+      { key: "startDate", value: attrs.startDate as number },
+      { key: "endDate", value: attrs.endDate as number },
+      { key: "capacity", value: attrs.capacity as number },
+      { key: "city", value: attrs.city as string },
+    ],
+    expiresIn: ExpirationTime.fromDate(expirationDate),
+  });
+
+  return { txHash };
+}
+
+export async function deleteEvent(
+  walletClient: ArkivWalletClient,
+  entityKey: Hex
+) {
+  const { txHash } = await walletClient.deleteEntity({ entityKey });
+  return { txHash };
+}
+
+export async function transferEvent(
+  walletClient: ArkivWalletClient,
+  entityKey: Hex,
+  newOwner: Hex
+) {
+  const { txHash } = await walletClient.changeOwnership({
+    entityKey,
+    newOwner,
+  });
+  return { txHash };
+}
+
+export async function getEvent(
+  entityKey: Hex
+): Promise<EventEntity | null> {
+  try {
+    const entity = await arkivPublic.getEntity(entityKey);
+    return parseEventEntity(entity);
+  } catch {
+    return null;
+  }
+}
+
+export async function queryEvents(
+  filters: EventFilters = {},
+  limit = 20
+): Promise<EventEntity[]> {
+  const predicates = [eq("type", ENTITY_TYPE)];
+
+  if (filters.category) predicates.push(eq("category", filters.category));
+  if (filters.locationType) predicates.push(eq("locationType", filters.locationType));
+  if (filters.status) predicates.push(eq("status", filters.status));
+  if (filters.city) predicates.push(eq("city", filters.city));
+  if (filters.organizerKey) predicates.push(eq("organizerKey", filters.organizerKey));
+  if (filters.startDateAfter) predicates.push(gt("startDate", filters.startDateAfter));
+  if (filters.startDateBefore) predicates.push(lt("startDate", filters.startDateBefore));
+
+  let query = arkivPublic
+    .buildQuery()
+    .where(predicates)
+    .withAttributes(true)
+    .withPayload(true)
+    .withMetadata(true)
+    .orderBy(desc("startDate", "number"))
+    .limit(limit);
+
+  if (filters.ownerWallet) {
+    query = query.ownedBy(filters.ownerWallet);
+  }
+
+  const result = await query.fetch();
+  return result.entities.map(parseEventEntity);
+}
+
+export async function queryUpcomingEvents(limit = 20): Promise<EventEntity[]> {
+  return queryEvents(
+    {
+      status: "upcoming",
+      startDateAfter: nowUnix(),
+    },
+    limit
+  );
+}
+
+export async function queryLiveEvents(limit = 20): Promise<EventEntity[]> {
+  return queryEvents({ status: "live" }, limit);
+}
+
+export async function getRsvpCount(eventKey: Hex): Promise<number> {
+  return arkivPublic
+    .buildQuery()
+    .where([eq("type", "rsvp"), eq("eventKey", eventKey), eq("status", "confirmed")])
+    .count();
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseEventEntity(entity: any): EventEntity {
+  const data = entity.toJson() as EventPayload;
+  const attrs = Object.fromEntries(
+    entity.attributes.map((a: { key: string; value: string | number }) => [a.key, a.value])
+  );
+
+  return {
+    entityKey: entity.key,
+    owner: entity.owner,
+    title: data.title,
+    description: data.description,
+    location: data.location,
+    venue: data.venue,
+    imageUrl: data.imageUrl,
+    startDate: data.startDate,
+    endDate: data.endDate,
+    timezone: data.timezone,
+    capacity: data.capacity,
+    tags: data.tags,
+    externalUrl: data.externalUrl,
+    organizerKey: attrs.organizerKey as string,
+    status: attrs.status as EventStatus,
+    category: attrs.category as EventCategory,
+    locationType: attrs.locationType as LocationType,
+    city: attrs.city as string,
+  };
+}
