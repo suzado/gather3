@@ -27,7 +27,8 @@ const categoryColors: Record<string, string> = {
     "bg-pink-500/15 text-pink-400 border-pink-500/20",
 };
 
-function getCategoryLabel(value: string): string {
+function getCategoryLabel(value: string | undefined): string {
+  if (!value) return "Event";
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
 

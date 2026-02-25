@@ -9,6 +9,7 @@ import type { RsvpStatus } from "@/lib/utils/constants";
 import type { Hex } from "viem";
 import { nowUnix } from "@/lib/utils/dates";
 import { getEvent } from "./events";
+import { APP_ID } from "@/lib/utils/constants";
 
 const ENTITY_TYPE = "rsvp";
 const BUFFER_DAYS = 7;
@@ -35,6 +36,7 @@ export async function createRsvp(
     payload: jsonToPayload(payload),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "eventKey", value: eventKey },
       { key: "status", value: "confirmed" as RsvpStatus },
@@ -62,6 +64,7 @@ export async function getRsvpsForEvent(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
       eq("status", "confirmed"),
@@ -70,10 +73,9 @@ export async function getRsvpsForEvent(
     .withPayload(true)
     .withMetadata(true)
     .orderBy(desc("rsvpDate", "number"))
-    .limit(limit)
     .fetch();
 
-  return result.entities.map(parseRsvpEntity);
+  return result.entities.map(parseRsvpEntity).slice(0, limit);
 }
 
 export async function getMyRsvps(
@@ -83,6 +85,7 @@ export async function getMyRsvps(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("attendeeWallet", walletAddress.toLowerCase()),
       eq("status", "confirmed"),
@@ -91,10 +94,9 @@ export async function getMyRsvps(
     .withPayload(true)
     .withMetadata(true)
     .orderBy(desc("rsvpDate", "number"))
-    .limit(limit)
     .fetch();
 
-  return result.entities.map(parseRsvpEntity);
+  return result.entities.map(parseRsvpEntity).slice(0, limit);
 }
 
 export async function hasUserRsvpd(
@@ -104,6 +106,7 @@ export async function hasUserRsvpd(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
       eq("attendeeWallet", walletAddress.toLowerCase()),
@@ -111,7 +114,6 @@ export async function hasUserRsvpd(
     ])
     .withAttributes(true)
     .withPayload(true)
-    .limit(1)
     .fetch();
 
   if (result.entities.length === 0) return null;
@@ -122,6 +124,7 @@ export async function getRsvpCount(eventKey: Hex): Promise<number> {
   return arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
       eq("status", "confirmed"),

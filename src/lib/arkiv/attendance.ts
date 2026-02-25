@@ -6,6 +6,7 @@ import { arkivPublic } from "./client";
 import type { ArkivWalletClient } from "./client";
 import type { AttendancePayload, AttendanceEntity } from "./types";
 import type { Hex } from "viem";
+import { APP_ID } from "@/lib/utils/constants";
 
 const ENTITY_TYPE = "attendance";
 
@@ -22,6 +23,7 @@ export async function checkInAttendee(
     payload: jsonToPayload(payload),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "eventKey", value: eventKey },
       { key: "attendeeWallet", value: attendeeWallet.toLowerCase() },
@@ -40,16 +42,16 @@ export async function getAttendanceForEvent(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
     ])
     .withAttributes(true)
     .withPayload(true)
     .orderBy(desc("checkedInAt", "number"))
-    .limit(limit)
     .fetch();
 
-  return result.entities.map(parseAttendanceEntity);
+  return result.entities.map(parseAttendanceEntity).slice(0, limit);
 }
 
 export async function hasAttendeeCheckedIn(
@@ -59,11 +61,11 @@ export async function hasAttendeeCheckedIn(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
       eq("attendeeWallet", attendeeWallet.toLowerCase()),
     ])
-    .limit(1)
     .fetch();
 
   return result.entities.length > 0;
@@ -73,6 +75,7 @@ export async function getAttendanceCount(eventKey: Hex): Promise<number> {
   return arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("eventKey", eventKey),
     ])

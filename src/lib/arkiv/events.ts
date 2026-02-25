@@ -12,6 +12,7 @@ import type {
 import type { EventStatus, EventCategory, LocationType } from "@/lib/utils/constants";
 import type { Hex } from "viem";
 import { nowUnix } from "@/lib/utils/dates";
+import { APP_ID } from "@/lib/utils/constants";
 
 const ENTITY_TYPE = "event";
 const BUFFER_DAYS = 30;
@@ -30,6 +31,7 @@ export async function createEvent(
     payload: jsonToPayload(data),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "organizerKey", value: organizerKey },
       { key: "status", value: "upcoming" as EventStatus },
@@ -63,6 +65,7 @@ export async function updateEvent(
     payload: jsonToPayload(data),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "organizerKey", value: organizerKey },
       { key: "status", value: status },
@@ -97,6 +100,7 @@ export async function updateEventStatus(
     payload: jsonToPayload(data),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "organizerKey", value: attrs.organizerKey as string },
       { key: "status", value: newStatus },
@@ -148,7 +152,7 @@ export async function queryEvents(
   filters: EventFilters = {},
   limit = 20
 ): Promise<EventEntity[]> {
-  const predicates = [eq("type", ENTITY_TYPE)];
+  const predicates = [eq("app", APP_ID), eq("type", ENTITY_TYPE)];
 
   if (filters.category) predicates.push(eq("category", filters.category));
   if (filters.locationType) predicates.push(eq("locationType", filters.locationType));
@@ -164,15 +168,14 @@ export async function queryEvents(
     .withAttributes(true)
     .withPayload(true)
     .withMetadata(true)
-    .orderBy(desc("startDate", "number"))
-    .limit(limit);
+    .orderBy(desc("startDate", "number"));
 
   if (filters.ownerWallet) {
     query = query.ownedBy(filters.ownerWallet);
   }
 
   const result = await query.fetch();
-  return result.entities.map(parseEventEntity);
+  return result.entities.map(parseEventEntity).slice(0, limit);
 }
 
 export async function queryUpcomingEvents(limit = 20): Promise<EventEntity[]> {
@@ -192,7 +195,7 @@ export async function queryLiveEvents(limit = 20): Promise<EventEntity[]> {
 export async function getRsvpCount(eventKey: Hex): Promise<number> {
   return arkivPublic
     .buildQuery()
-    .where([eq("type", "rsvp"), eq("eventKey", eventKey), eq("status", "confirmed")])
+    .where([eq("app", APP_ID), eq("type", "rsvp"), eq("eventKey", eventKey), eq("status", "confirmed")])
     .count();
 }
 
@@ -206,21 +209,21 @@ function parseEventEntity(entity: any): EventEntity {
   return {
     entityKey: entity.key,
     owner: entity.owner,
-    title: data.title,
-    description: data.description,
-    location: data.location,
+    title: data.title ?? "Untitled Event",
+    description: data.description ?? "",
+    location: data.location ?? attrs.location as string ?? "",
     venue: data.venue,
     imageUrl: data.imageUrl,
-    startDate: data.startDate,
-    endDate: data.endDate,
-    timezone: data.timezone,
-    capacity: data.capacity,
-    tags: data.tags,
+    startDate: data.startDate ?? (attrs.startDate as number) ?? (attrs.event_timestamp as number) ?? 0,
+    endDate: data.endDate ?? (attrs.endDate as number) ?? 0,
+    timezone: data.timezone ?? "",
+    capacity: data.capacity ?? (attrs.capacity as number) ?? 0,
+    tags: data.tags ?? [],
     externalUrl: data.externalUrl,
-    organizerKey: attrs.organizerKey as string,
-    status: attrs.status as EventStatus,
-    category: attrs.category as EventCategory,
-    locationType: attrs.locationType as LocationType,
-    city: attrs.city as string,
+    organizerKey: (attrs.organizerKey as string) ?? "",
+    status: (attrs.status as EventStatus) ?? "upcoming",
+    category: (attrs.category as EventCategory) ?? "meetup",
+    locationType: (attrs.locationType as LocationType) ?? "in-person",
+    city: (attrs.city as string) ?? "",
   };
 }

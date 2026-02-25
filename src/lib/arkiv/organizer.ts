@@ -6,6 +6,7 @@ import type { ArkivWalletClient } from "./client";
 import type { OrganizerPayload, OrganizerEntity } from "./types";
 import type { Hex } from "viem";
 import { nowUnix } from "@/lib/utils/dates";
+import { APP_ID } from "@/lib/utils/constants";
 
 const ENTITY_TYPE = "organizer";
 
@@ -26,6 +27,7 @@ export async function createOrganizer(
     payload: jsonToPayload(payload),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "wallet", value: walletAddress.toLowerCase() },
       { key: "name", value: data.name },
@@ -48,6 +50,7 @@ export async function updateOrganizer(
     payload: jsonToPayload(data),
     contentType: "application/json",
     attributes: [
+      { key: "app", value: APP_ID },
       { key: "type", value: ENTITY_TYPE },
       { key: "wallet", value: walletAddress.toLowerCase() },
       { key: "name", value: data.name },
@@ -65,13 +68,13 @@ export async function getOrganizerByWallet(
   const result = await arkivPublic
     .buildQuery()
     .where([
+      eq("app", APP_ID),
       eq("type", ENTITY_TYPE),
       eq("wallet", walletAddress.toLowerCase()),
     ])
     .withAttributes(true)
     .withPayload(true)
     .withMetadata(true)
-    .limit(1)
     .fetch();
 
   if (result.entities.length === 0) return null;
