@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getEvent } from "@/lib/arkiv/events";
 import type { EventEntity } from "@/lib/arkiv/types";
 import type { Hex } from "viem";
@@ -9,7 +9,7 @@ export function useEvent(eventKey: Hex | null) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
+  const fetchEvent = useCallback(() => {
     if (!eventKey) return;
     setLoading(true);
     getEvent(eventKey)
@@ -18,5 +18,9 @@ export function useEvent(eventKey: Hex | null) {
       .finally(() => setLoading(false));
   }, [eventKey]);
 
-  return { event, loading, error };
+  useEffect(() => {
+    fetchEvent();
+  }, [fetchEvent]);
+
+  return { event, loading, error, refetch: fetchEvent };
 }

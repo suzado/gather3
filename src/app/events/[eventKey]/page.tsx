@@ -26,6 +26,10 @@ import { useEvent } from "@/hooks/useEvent";
 import { useRsvps, useUserRsvp } from "@/hooks/useRsvps";
 import { useOrganizerByKey } from "@/hooks/useOrganizer";
 import { useWalletAddress } from "@/hooks/useArkivClient";
+import { useLiveRsvps } from "@/hooks/useLiveRsvps";
+import { LiveRsvpFeed } from "@/components/rsvp/LiveRsvpFeed";
+import { EventManagePanel } from "@/components/events/EventManagePanel";
+import { useAccount } from "wagmi";
 import {
   formatEventDate,
   formatEventTime,
@@ -91,7 +95,8 @@ export default function EventDetailPage({
   const eventKeyHex = eventKey as Hex;
 
   const walletAddress = useWalletAddress();
-  const { event, loading: eventLoading, error } = useEvent(eventKeyHex);
+  const { address } = useAccount();
+  const { event, loading: eventLoading, error, refetch: refetchEvent } = useEvent(eventKeyHex);
   const { rsvps, count: rsvpCount, loading: rsvpsLoading, refetch: refetchRsvps } =
     useRsvps(eventKeyHex);
   const { rsvp: userRsvp, refetch: refetchUserRsvp } = useUserRsvp(
@@ -101,6 +106,11 @@ export default function EventDetailPage({
   const { organizer } = useOrganizerByKey(
     event?.organizerKey ? (event.organizerKey as Hex) : null
   );
+  const { liveEvents } = useLiveRsvps(eventKeyHex);
+
+  const isOwner = event?.owner && address
+    ? event.owner.toLowerCase() === address.toLowerCase()
+    : false;
 
   const handleRsvpChange = () => {
     refetchRsvps();
@@ -333,7 +343,23 @@ export default function EventDetailPage({
                     This event has {event.status === "cancelled" ? "been cancelled" : "ended"}.
                   </p>
                 )}
+
+                {/* Live RSVP Feed */}
+                {liveEvents.length > 0 && (
+                  <>
+                    <Separator className="bg-white/[0.06]" />
+                    <LiveRsvpFeed events={liveEvents} />
+                  </>
+                )}
               </div>
+
+              {/* Management Panel (owner only) */}
+              {isOwner && (
+                <EventManagePanel
+                  event={event}
+                  onUpdate={() => refetchEvent()}
+                />
+              )}
             </motion.div>
           </div>
         </div>
