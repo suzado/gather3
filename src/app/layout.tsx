@@ -5,6 +5,7 @@ import { ClientProviders } from "@/providers/ClientProviders";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
+import { RpcHealthBanner } from "@/components/common/RpcHealthBanner";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -35,6 +36,7 @@ export default function RootLayout({
       >
         <ClientProviders>
           <Header />
+          <RpcHealthBanner />
           <main className="flex-1">{children}</main>
           <Footer />
           <Toaster
