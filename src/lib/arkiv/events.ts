@@ -221,6 +221,7 @@ function parseEventEntity(entity: any): EventEntity {
     location: data.location ?? attrs.location as string ?? "",
     venue: data.venue,
     imageUrl: data.imageUrl,
+    coverImageKey: data.coverImageKey,
     startDate: data.startDate ?? (attrs.startDate as number) ?? (attrs.event_timestamp as number) ?? 0,
     endDate: data.endDate ?? (attrs.endDate as number) ?? 0,
     timezone: data.timezone ?? "",

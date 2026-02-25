@@ -10,6 +10,7 @@ import {
   ArrowRightLeft,
   Loader2,
   Shield,
+  Image as ImageIcon,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -25,11 +26,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useArkivWallet } from "@/hooks/useArkivClient";
+import { useCoverImage } from "@/hooks/useCoverImage";
 import {
   updateEventStatus,
+  updateEvent,
   deleteEvent,
   transferEvent,
 } from "@/lib/arkiv/events";
+import { createCoverImage, updateCoverImage } from "@/lib/arkiv/images";
+import { CoverImageUpload } from "@/components/events/CoverImageUpload";
+import type { CompressedImage } from "@/lib/utils/imageCompression";
 import type { EventEntity } from "@/lib/arkiv/types";
 import type { EventStatus } from "@/lib/utils/constants";
 import type { Hex } from "viem";
@@ -57,7 +63,9 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
   const [transferAddress, setTransferAddress] = useState("");
   const [transferOpen, setTransferOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [coverImageData, setCoverImageData] = useState<CompressedImage | null>(null);
   const arkivWallet = useArkivWallet();
+  const { imageUrl: existingCoverUrl } = useCoverImage(event.coverImageKey);
 
   const transitions = STATUS_TRANSITIONS[event.status] || [];
 
@@ -116,6 +124,62 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
     }
   }
 
+  async function handleCoverImageSave() {
+    if (!arkivWallet || !coverImageData) return;
+    setLoading("cover-image");
+    try {
+      let imageKey: string;
+      if (event.coverImageKey) {
+        await updateCoverImage(
+          arkivWallet,
+          event.coverImageKey as Hex,
+          coverImageData.data
+        );
+        imageKey = event.coverImageKey;
+      } else {
+        const { entityKey } = await createCoverImage(
+          arkivWallet,
+          coverImageData.data,
+          event.entityKey
+        );
+        imageKey = entityKey;
+      }
+
+      await updateEvent(
+        arkivWallet,
+        event.entityKey,
+        {
+          title: event.title,
+          description: event.description,
+          location: event.location,
+          venue: event.venue,
+          imageUrl: event.imageUrl,
+          coverImageKey: imageKey,
+          startDate: event.startDate,
+          endDate: event.endDate,
+          timezone: event.timezone,
+          capacity: event.capacity,
+          tags: event.tags,
+          externalUrl: event.externalUrl,
+        },
+        event.organizerKey,
+        event.status,
+        event.category,
+        event.locationType,
+        event.city
+      );
+
+      toast.success("Cover image updated!");
+      setCoverImageData(null);
+      onUpdate();
+    } catch (err) {
+      console.error("Cover image update error:", err);
+      toast.error("Failed to update cover image");
+    } finally {
+      setLoading(null);
+    }
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -164,6 +228,36 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
           — no further status changes available
         </p>
       )}
+
+      <Separator className="bg-white/10" />
+
+      {/* Cover Image */}
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground">Cover Image</p>
+        <CoverImageUpload
+          onImageReady={setCoverImageData}
+          eventTitle={event.title}
+          eventDescription={event.description}
+          eventCategory={event.category}
+          existingArkivImageUrl={existingCoverUrl || undefined}
+          existingImageUrl={event.imageUrl}
+        />
+        {coverImageData && (
+          <Button
+            size="sm"
+            onClick={handleCoverImageSave}
+            disabled={loading !== null}
+            className="w-full bg-gradient-to-r from-violet-600 to-blue-600"
+          >
+            {loading === "cover-image" ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <ImageIcon className="mr-2 h-4 w-4" />
+            )}
+            Save Cover Image
+          </Button>
+        )}
+      </div>
 
       <Separator className="bg-white/10" />
 

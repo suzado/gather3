@@ -29,6 +29,7 @@ import { useWalletAddress } from "@/hooks/useArkivClient";
 import { useLiveRsvps } from "@/hooks/useLiveRsvps";
 import { LiveRsvpFeed } from "@/components/rsvp/LiveRsvpFeed";
 import { EventManagePanel } from "@/components/events/EventManagePanel";
+import { useCoverImage } from "@/hooks/useCoverImage";
 import { useAccount } from "wagmi";
 import {
   formatEventDate,
@@ -107,6 +108,9 @@ export default function EventDetailPage({
     event?.organizerKey ? (event.organizerKey as Hex) : null
   );
   const { liveEvents } = useLiveRsvps(eventKeyHex);
+  const { imageUrl: coverImageUrl } = useCoverImage(event?.coverImageKey);
+
+  const displayImageUrl = coverImageUrl || event?.imageUrl || null;
 
   const isOwner = event?.owner && address
     ? event.owner.toLowerCase() === address.toLowerCase()
@@ -171,6 +175,23 @@ export default function EventDetailPage({
               Back to Events
             </Link>
           </motion.div>
+
+          {/* Cover image */}
+          {displayImageUrl && (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="rounded-2xl overflow-hidden mb-8 border border-white/[0.08]"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayImageUrl}
+                alt={event.title}
+                className="w-full aspect-video object-cover"
+              />
+            </motion.div>
+          )}
 
           {/* Event header */}
           <motion.div

@@ -39,7 +39,11 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useArkivWallet } from "@/hooks/useArkivClient";
 import { createEvent } from "@/lib/arkiv/events";
+import { createCoverImage } from "@/lib/arkiv/images";
 import { EVENT_CATEGORIES, LOCATION_TYPES } from "@/lib/utils/constants";
+import { CoverImageUpload } from "@/components/events/CoverImageUpload";
+import { createImagePreviewUrl } from "@/lib/utils/imageCompression";
+import type { CompressedImage } from "@/lib/utils/imageCompression";
 import type { EventPayload } from "@/lib/arkiv/types";
 
 const eventSchema = z
@@ -60,7 +64,6 @@ const eventSchema = z
     timezone: z.string().min(1, "Timezone is required"),
     capacity: z.number().min(1, "Capacity must be at least 1").max(100000),
     tags: z.string().optional(),
-    imageUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
     externalUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
   })
   .refine(
@@ -89,6 +92,7 @@ interface EventFormProps {
 export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
   const [step, setStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coverImageData, setCoverImageData] = useState<CompressedImage | null>(null);
   const arkivWallet = useArkivWallet();
 
   const form = useForm<EventFormData>({
@@ -107,7 +111,6 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
       timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       capacity: 100,
       tags: "",
-      imageUrl: "",
       externalUrl: "",
     },
   });
@@ -140,12 +143,22 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
         new Date(`${data.endDate}T${data.endTime}`).getTime() / 1000
       );
 
+      // Upload cover image to Arkiv if provided
+      let coverImageKey: string | undefined;
+      if (coverImageData) {
+        const { entityKey: imageKey } = await createCoverImage(
+          arkivWallet,
+          coverImageData.data
+        );
+        coverImageKey = imageKey;
+      }
+
       const payload: EventPayload = {
         title: data.title,
         description: data.description,
         location: data.location,
         venue: data.venue || undefined,
-        imageUrl: data.imageUrl || undefined,
+        coverImageKey,
         startDate: startTimestamp,
         endDate: endTimestamp,
         timezone: data.timezone,
@@ -250,8 +263,19 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
             >
               {step === 0 && <StepBasics form={form} />}
               {step === 1 && <StepDateTime form={form} />}
-              {step === 2 && <StepSettings form={form} />}
-              {step === 3 && <StepPreview values={watchedValues} />}
+              {step === 2 && (
+                <StepSettings
+                  form={form}
+                  coverImageData={coverImageData}
+                  setCoverImageData={setCoverImageData}
+                />
+              )}
+              {step === 3 && (
+                <StepPreview
+                  values={watchedValues}
+                  coverImageData={coverImageData}
+                />
+              )}
             </motion.div>
           </AnimatePresence>
 
@@ -534,7 +558,17 @@ function StepDateTime({ form }: { form: any }) {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-function StepSettings({ form }: { form: any }) {
+function StepSettings({
+  form,
+  coverImageData,
+  setCoverImageData,
+}: {
+  form: any;
+  coverImageData: CompressedImage | null;
+  setCoverImageData: (img: CompressedImage | null) => void;
+}) {
+  const watchedValues = form.watch();
+
   return (
     <div className="space-y-6">
       <div>
@@ -584,23 +618,15 @@ function StepSettings({ form }: { form: any }) {
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="imageUrl"
-        render={({ field }: { field: Record<string, unknown> }) => (
-          <FormItem>
-            <FormLabel>Cover Image URL (optional)</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="https://example.com/event-cover.jpg"
-                className="glass border-white/10"
-                {...field}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Cover Image (optional)</label>
+        <CoverImageUpload
+          onImageReady={setCoverImageData}
+          eventTitle={watchedValues.title}
+          eventDescription={watchedValues.description}
+          eventCategory={watchedValues.category}
+        />
+      </div>
 
       <FormField
         control={form.control}
@@ -624,9 +650,18 @@ function StepSettings({ form }: { form: any }) {
   );
 }
 
-function StepPreview({ values }: { values: EventFormData }) {
+function StepPreview({
+  values,
+  coverImageData,
+}: {
+  values: EventFormData;
+  coverImageData: CompressedImage | null;
+}) {
   const category = EVENT_CATEGORIES.find((c) => c.value === values.category);
   const locType = LOCATION_TYPES.find((l) => l.value === values.locationType);
+  const coverPreviewUrl = coverImageData
+    ? createImagePreviewUrl(coverImageData.data)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -638,6 +673,17 @@ function StepPreview({ values }: { values: EventFormData }) {
       </div>
 
       <div className="glass rounded-xl p-6 space-y-4">
+        {coverPreviewUrl && (
+          <div className="rounded-lg overflow-hidden -mx-2 -mt-2 mb-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={coverPreviewUrl}
+              alt="Event cover"
+              className="w-full aspect-video object-cover"
+            />
+          </div>
+        )}
+
         <div className="flex items-center gap-2 flex-wrap">
           {category && <Badge variant="secondary">{category.label}</Badge>}
           {locType && <Badge variant="outline">{locType.label}</Badge>}

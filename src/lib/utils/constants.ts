@@ -32,3 +32,10 @@ export type EventCategory = (typeof EVENT_CATEGORIES)[number]["value"];
 export type LocationType = (typeof LOCATION_TYPES)[number]["value"];
 export type EventStatus = (typeof EVENT_STATUSES)[number]["value"];
 export type RsvpStatus = (typeof RSVP_STATUSES)[number]["value"];
+
+// Cover image constraints
+export const COVER_IMAGE_MAX_WIDTH = 800;
+export const COVER_IMAGE_MAX_HEIGHT = 450;
+export const COVER_IMAGE_QUALITY = 0.75;
+export const COVER_IMAGE_MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB input limit
+export const COVER_IMAGE_MAX_PAYLOAD_SIZE = 80 * 1024; // 80KB target after resize

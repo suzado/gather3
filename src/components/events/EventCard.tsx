@@ -6,6 +6,7 @@ import { Calendar, MapPin, Users, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EventStatusBadge } from "./EventStatusBadge";
 import type { EventEntity } from "@/lib/arkiv/types";
+import { useCoverImage } from "@/hooks/useCoverImage";
 import { formatEventDate, formatEventTime } from "@/lib/utils/dates";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +34,8 @@ function getCategoryLabel(value: string | undefined): string {
 }
 
 export function EventCard({ event, index = 0 }: EventCardProps) {
+  const { imageUrl: coverUrl } = useCoverImage(event.coverImageKey);
+  const displayImage = coverUrl || event.imageUrl || null;
   const rsvpCount = event.rsvpCount ?? 0;
   const fillPercent =
     event.capacity > 0
@@ -57,6 +60,18 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
             "cursor-pointer"
           )}
         >
+          {/* Cover image */}
+          {displayImage && (
+            <div className="rounded-lg overflow-hidden -mx-1 -mt-1 mb-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={displayImage}
+                alt=""
+                className="w-full aspect-[2/1] object-cover"
+              />
+            </div>
+          )}
+
           {/* Badges row */}
           <div className="flex items-center justify-between mb-4">
             <Badge

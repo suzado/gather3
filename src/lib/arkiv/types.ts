@@ -22,6 +22,7 @@ export interface EventPayload {
   location: string;
   venue?: string;
   imageUrl?: string;
+  coverImageKey?: string; // entityKey of Arkiv image entity
   startDate: number; // unix timestamp
   endDate: number;
   timezone: string;
@@ -62,6 +63,7 @@ export interface EventEntity {
   location: string;
   venue?: string;
   imageUrl?: string;
+  coverImageKey?: string;
   startDate: number;
   endDate: number;
   timezone: string;
