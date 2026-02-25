@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { Calendar, Plus, LayoutDashboard } from "lucide-react";
+import { Plus, LayoutDashboard } from "lucide-react";
+import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -20,10 +21,8 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="relative flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 transition-transform group-hover:scale-110">
-                <Calendar className="h-4 w-4 text-white" />
-              </div>
+            <Link href="/" className="flex items-center gap-2 group transition-transform hover:scale-[1.03]">
+              <Logo size="md" variant="mark" className="text-white" />
               <span className="text-lg font-bold gradient-text">Gather3</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
