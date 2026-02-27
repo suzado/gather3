@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Info, X, ArrowRight } from "lucide-react";
 import { FAUCET_URL } from "@/lib/utils/constants";
+import { arkivChain } from "@/lib/wallet/config";
 
 const STORAGE_KEY = "gather3-testnet-banner-dismissed";
 
@@ -27,7 +28,7 @@ export function TestnetBanner() {
         <Info className="h-5 w-5 text-violet-400 shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-violet-200">
-            Gather3 runs on <strong>Arkiv Mendoza testnet</strong>. You need a small amount of testnet ETH for gas fees.
+            Gather3 runs on <strong>Arkiv {arkivChain.name} testnet</strong>. You need a small amount of testnet ETH for gas fees.
           </p>
           <Link
             href={FAUCET_URL}

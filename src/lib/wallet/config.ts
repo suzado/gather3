@@ -1,34 +1,16 @@
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
-import { defineChain } from "viem";
+import { kaolin } from "@arkiv-network/sdk/chains";
+import { mendoza } from "@arkiv-network/sdk/chains";
 
-export const mendoza = defineChain({
-  id: 60138453056,
-  name: "Arkiv Mendoza",
-  network: "mendoza",
-  nativeCurrency: {
-    name: "Ethereum",
-    symbol: "ETH",
-    decimals: 18,
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://mendoza.hoodi.arkiv.network/rpc"],
-      webSocket: ["wss://mendoza.hoodi.arkiv.network/rpc/ws"],
-    },
-  },
-  blockExplorers: {
-    default: {
-      name: "Mendoza Explorer",
-      url: "https://explorer.mendoza.hoodi.arkiv.network",
-      apiUrl: "https://explorer.mendoza.hoodi.arkiv.network/api",
-    },
-  },
-  testnet: true,
-});
+const chains = { kaolin, mendoza } as const;
+type ChainName = keyof typeof chains;
+
+const envChain = process.env.NEXT_PUBLIC_ARKIV_CHAIN as ChainName | undefined;
+export const arkivChain = chains[envChain ?? "kaolin"];
 
 export const wagmiConfig = getDefaultConfig({
   appName: "Gather3.club",
   projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "demo",
-  chains: [mendoza],
+  chains: [arkivChain],
   ssr: true,
 });

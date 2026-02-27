@@ -87,7 +87,7 @@ export function OrganizerForm({ existingOrganizer, onSuccess }: OrganizerFormPro
       console.error("Organizer form error:", err);
       const message = err instanceof Error ? err.message : String(err);
       if (message.toLowerCase().includes("insufficient funds") || message.toLowerCase().includes("insufficient balance")) {
-        toast.error("Insufficient funds. You need testnet ETH for gas fees. Visit the Arkiv Mendoza faucet to get some.", { duration: 8000 });
+        toast.error("Insufficient funds. You need testnet ETH for gas fees. Visit the Arkiv faucet to get some.", { duration: 8000 });
       } else if (message.includes("User denied") || message.includes("user rejected")) {
         toast.error("Transaction was cancelled.");
       } else {

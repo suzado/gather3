@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { mendoza } from "@/lib/wallet/config";
+import { arkivChain } from "@/lib/wallet/config";
 import { subscribe as subscribeRpcTracker } from "@/lib/arkiv/rpcTracker";
 
 const POLL_INTERVAL = 30_000;
@@ -14,7 +14,7 @@ export function useRpcHealth() {
 
   // Periodic eth_chainId health check (baseline)
   const checkHealth = useCallback(async () => {
-    const rpcUrl = mendoza.rpcUrls.default.http[0];
+    const rpcUrl = arkivChain.rpcUrls.default.http[0];
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
 

@@ -1,5 +1,7 @@
+import { arkivChain } from "@/lib/wallet/config";
+
 export const APP_ID = "gather3.club";
-export const FAUCET_URL = "https://mendoza.hoodi.arkiv.network/faucet/";
+export const FAUCET_URL = `https://${arkivChain.network}.hoodi.arkiv.network/faucet/`;
 
 export const EVENT_CATEGORIES = [
   { value: "conference", label: "Conference", icon: "Presentation" },
