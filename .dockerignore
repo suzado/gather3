@@ -1,0 +1,12 @@
+node_modules
+.next
+.git
+.gitignore
+.env*
+!.env.local.example
+README.md
+IDEAS.md
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+.vercel
