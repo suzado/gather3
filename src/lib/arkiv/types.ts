@@ -16,6 +16,14 @@ export interface OrganizerPayload {
   twitter?: string;
 }
 
+export interface SocialLinks {
+  twitter?: string;
+  discord?: string;
+  telegram?: string;
+  farcaster?: string;
+  github?: string;
+}
+
 export interface EventPayload {
   title: string;
   description: string;
@@ -29,6 +37,7 @@ export interface EventPayload {
   capacity: number;
   tags: string[];
   externalUrl?: string;
+  socialLinks?: SocialLinks;
 }
 
 export interface RsvpPayload {
@@ -70,6 +79,7 @@ export interface EventEntity {
   capacity: number;
   tags: string[];
   externalUrl?: string;
+  socialLinks?: SocialLinks;
   organizerKey: string;
   status: EventStatus;
   category: EventCategory;

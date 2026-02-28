@@ -231,6 +231,7 @@ function parseEventEntity(entity: any): EventEntity {
     capacity: data.capacity ?? (attrs.capacity as number) ?? 0,
     tags: data.tags ?? [],
     externalUrl: data.externalUrl,
+    socialLinks: data.socialLinks,
     organizerKey: (attrs.organizerKey as string) ?? "",
     status: (attrs.status as EventStatus) ?? "upcoming",
     category: (attrs.category as EventCategory) ?? "meetup",

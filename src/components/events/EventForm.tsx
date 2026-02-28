@@ -44,7 +44,7 @@ import { EVENT_CATEGORIES, LOCATION_TYPES } from "@/lib/utils/constants";
 import { CoverImageUpload } from "@/components/events/CoverImageUpload";
 import { createImagePreviewUrl } from "@/lib/utils/imageCompression";
 import type { CompressedImage } from "@/lib/utils/imageCompression";
-import type { EventPayload } from "@/lib/arkiv/types";
+import type { EventPayload, SocialLinks } from "@/lib/arkiv/types";
 
 const eventSchema = z
   .object({
@@ -65,6 +65,11 @@ const eventSchema = z
     capacity: z.number().min(1, "Capacity must be at least 1").max(100000),
     tags: z.string().optional(),
     externalUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    socialTwitter: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    socialDiscord: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    socialTelegram: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    socialFarcaster: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+    socialGithub: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
   })
   .refine(
     (data) => {
@@ -112,6 +117,11 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
       capacity: 100,
       tags: "",
       externalUrl: "",
+      socialTwitter: "",
+      socialDiscord: "",
+      socialTelegram: "",
+      socialFarcaster: "",
+      socialGithub: "",
     },
   });
 
@@ -153,6 +163,15 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
         coverImageKey = imageKey;
       }
 
+      const socialLinks: SocialLinks = {
+        twitter: data.socialTwitter || undefined,
+        discord: data.socialDiscord || undefined,
+        telegram: data.socialTelegram || undefined,
+        farcaster: data.socialFarcaster || undefined,
+        github: data.socialGithub || undefined,
+      };
+      const hasSocialLinks = Object.values(socialLinks).some(Boolean);
+
       const payload: EventPayload = {
         title: data.title,
         description: data.description,
@@ -167,6 +186,7 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
           ? data.tags.split(",").map((t) => t.trim()).filter(Boolean)
           : [],
         externalUrl: data.externalUrl || undefined,
+        socialLinks: hasSocialLinks ? socialLinks : undefined,
       };
 
       const city = extractCity(data.location);
@@ -649,6 +669,107 @@ function StepSettings({
           </FormItem>
         )}
       />
+
+      <Separator className="bg-white/10" />
+
+      <div className="space-y-4">
+        <div>
+          <h3 className="text-sm font-medium">Social Media Links (optional)</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Add links so attendees can find your community
+          </p>
+        </div>
+
+        <FormField
+          control={form.control}
+          name="socialTwitter"
+          render={({ field }: { field: Record<string, unknown> }) => (
+            <FormItem>
+              <FormLabel>Twitter / X</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://x.com/your-handle"
+                  className="glass border-white/10"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="socialDiscord"
+          render={({ field }: { field: Record<string, unknown> }) => (
+            <FormItem>
+              <FormLabel>Discord</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://discord.gg/your-server"
+                  className="glass border-white/10"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="socialTelegram"
+          render={({ field }: { field: Record<string, unknown> }) => (
+            <FormItem>
+              <FormLabel>Telegram</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://t.me/your-group"
+                  className="glass border-white/10"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="socialFarcaster"
+          render={({ field }: { field: Record<string, unknown> }) => (
+            <FormItem>
+              <FormLabel>Farcaster</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://warpcast.com/your-handle"
+                  className="glass border-white/10"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="socialGithub"
+          render={({ field }: { field: Record<string, unknown> }) => (
+            <FormItem>
+              <FormLabel>GitHub</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="https://github.com/your-repo"
+                  className="glass border-white/10"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
     </div>
   );
 }
@@ -735,6 +856,22 @@ function StepPreview({
                   {tag.trim()}
                 </Badge>
               ))}
+            </div>
+          </>
+        )}
+
+        {(values.socialTwitter || values.socialDiscord || values.socialTelegram || values.socialFarcaster || values.socialGithub) && (
+          <>
+            <Separator className="bg-white/10" />
+            <div>
+              <p className="text-muted-foreground text-xs mb-2">Social Media</p>
+              <div className="flex flex-wrap gap-2 text-xs">
+                {values.socialTwitter && <Badge variant="outline">Twitter/X</Badge>}
+                {values.socialDiscord && <Badge variant="outline">Discord</Badge>}
+                {values.socialTelegram && <Badge variant="outline">Telegram</Badge>}
+                {values.socialFarcaster && <Badge variant="outline">Farcaster</Badge>}
+                {values.socialGithub && <Badge variant="outline">GitHub</Badge>}
+              </div>
             </div>
           </>
         )}
