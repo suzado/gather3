@@ -1,7 +1,8 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Globe,
@@ -10,6 +11,7 @@ import {
   Users,
   Edit,
   ExternalLink,
+  CheckCircle2,
 } from "lucide-react";
 import { useAccount } from "wagmi";
 import { Button } from "@/components/ui/button";
@@ -24,49 +26,108 @@ import { getOrganizerByWallet } from "@/lib/arkiv/organizer";
 import { queryEvents } from "@/lib/arkiv/events";
 import type { OrganizerEntity, EventEntity } from "@/lib/arkiv/types";
 
+const MAX_RETRIES = 5;
+const RETRY_INTERVAL_MS = 2000;
+
 export default function OrganizerProfilePage({
   params,
 }: {
   params: Promise<{ wallet: string }>;
 }) {
   const { wallet } = use(params);
+  const searchParams = useSearchParams();
+  const justCreated = searchParams.get("created") === "true";
   const { address } = useAccount();
   const [organizer, setOrganizer] = useState<OrganizerEntity | null>(null);
   const [events, setEvents] = useState<EventEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showSuccess, setShowSuccess] = useState(justCreated);
+  const retryCount = useRef(0);
 
   const isOwnProfile = address?.toLowerCase() === wallet?.toLowerCase();
+
+  const loadOrganizer = useCallback(async () => {
+    if (!wallet) return;
+    try {
+      const org = await getOrganizerByWallet(wallet);
+      setOrganizer(org);
+
+      if (org) {
+        retryCount.current = 0;
+        const evts = await queryEvents(
+          { organizerKey: org.entityKey },
+          50
+        );
+        setEvents(evts);
+      }
+      return org;
+    } catch (err) {
+      console.error("Failed to load organizer:", err);
+      return null;
+    }
+  }, [wallet]);
 
   useEffect(() => {
     if (!wallet) return;
 
+    let retryTimer: ReturnType<typeof setTimeout>;
+    let cancelled = false;
+
     async function load() {
       setLoading(true);
-      try {
-        const org = await getOrganizerByWallet(wallet);
-        setOrganizer(org);
+      const org = await loadOrganizer();
 
-        if (org) {
-          const evts = await queryEvents(
-            { organizerKey: org.entityKey },
-            50
-          );
-          setEvents(evts);
-        }
-      } catch (err) {
-        console.error("Failed to load organizer:", err);
-      } finally {
+      if (!org && justCreated && retryCount.current < MAX_RETRIES && !cancelled) {
+        retryCount.current += 1;
+        retryTimer = setTimeout(async () => {
+          if (cancelled) return;
+          const retried = await loadOrganizer();
+          if (!retried && retryCount.current < MAX_RETRIES && !cancelled) {
+            load();
+          } else {
+            setLoading(false);
+          }
+        }, RETRY_INTERVAL_MS);
+      } else {
         setLoading(false);
       }
     }
     load();
-  }, [wallet]);
+
+    return () => {
+      cancelled = true;
+      clearTimeout(retryTimer);
+    };
+  }, [wallet, justCreated, loadOrganizer]);
+
+  useEffect(() => {
+    if (showSuccess) {
+      const timer = setTimeout(() => setShowSuccess(false), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSuccess]);
 
   if (loading) {
     return (
       <PageTransition>
         <div className="mx-auto max-w-5xl px-4 py-12">
-          <LoadingSkeleton count={3} />
+          {justCreated ? (
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="flex flex-col items-center justify-center py-20 text-center"
+            >
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-violet-500 border-t-transparent mb-6" />
+              <h3 className="text-lg font-semibold text-foreground/90 mb-2">
+                Setting up your profile...
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-sm leading-relaxed">
+                Your organizer profile is being created on the Arkiv network. This may take a few seconds.
+              </p>
+            </motion.div>
+          ) : (
+            <LoadingSkeleton count={3} />
+          )}
         </div>
       </PageTransition>
     );
@@ -100,6 +161,20 @@ export default function OrganizerProfilePage({
   return (
     <PageTransition>
       <div className="mx-auto max-w-5xl px-4 py-12">
+        {showSuccess && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-5 py-4"
+          >
+            <CheckCircle2 className="h-5 w-5 text-emerald-400 shrink-0" />
+            <p className="text-sm text-emerald-200">
+              Your organizer profile has been created successfully! You can now start creating events.
+            </p>
+          </motion.div>
+        )}
+
         {/* Profile Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}

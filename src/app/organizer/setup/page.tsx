@@ -79,7 +79,7 @@ export default function OrganizerSetupPage() {
               existingOrganizer={organizer}
               onSuccess={() => {
                 if (walletAddress) {
-                  router.push(`/organizer/${walletAddress}`);
+                  router.push(`/organizer/${walletAddress}?created=true`);
                 }
               }}
             />
