@@ -176,14 +176,25 @@ export async function queryEvents(
     .withAttributes(true)
     .withPayload(true)
     .withMetadata(true)
-    .orderBy(desc("startDate", "number"));
+    .orderBy(desc("startDate", "number"))
+    .limit(limit);
 
   if (filters.ownerWallet) {
     query = query.ownedBy(filters.ownerWallet);
   }
 
   const result = await trackedFetch(query.fetch());
-  return result.entities.map(parseEventEntity).slice(0, limit);
+  const events = result.entities.map(parseEventEntity).slice(0, limit);
+
+  // Fetch RSVP counts in parallel for all events
+  const counts = await Promise.all(
+    events.map((e) => getRsvpCount(e.entityKey).catch(() => 0))
+  );
+  events.forEach((e, i) => {
+    e.rsvpCount = counts[i];
+  });
+
+  return events;
 }
 
 export async function queryUpcomingEvents(limit = 20): Promise<EventEntity[]> {

@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { queryEvents, queryUpcomingEvents } from "@/lib/arkiv/events";
 import type { EventEntity, EventFilters } from "@/lib/arkiv/types";
 
-export function useEvents(filters: EventFilters = {}, limit = 20) {
+export function useEvents(filters: EventFilters = {}, limit = 50) {
   const [events, setEvents] = useState<EventEntity[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

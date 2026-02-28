@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Search, List, MapPin } from "lucide-react";
+import { ArrowRight, Search, List } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { EventFilters } from "@/components/events/EventFilters";
 import { EventGrid } from "@/components/events/EventGrid";
@@ -57,6 +57,7 @@ export default function EventsPage() {
                     <List className="mr-1 h-4 w-4" />
                     List
                   </Button>
+                  {/* Map link hidden until geocoding is pre-computed
                   <Link href="/events/map">
                     <Button
                       variant="outline"
@@ -67,6 +68,7 @@ export default function EventsPage() {
                       Map
                     </Button>
                   </Link>
+                  */}
                 </div>
                 <Link href="/events/create">
                   <Button
