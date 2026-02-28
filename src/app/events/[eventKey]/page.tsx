@@ -30,6 +30,7 @@ import { useLiveRsvps } from "@/hooks/useLiveRsvps";
 import { LiveRsvpFeed } from "@/components/rsvp/LiveRsvpFeed";
 import { EventManagePanel } from "@/components/events/EventManagePanel";
 import { AddToCalendarButton } from "@/components/events/AddToCalendarButton";
+import { EventCountdown } from "@/components/events/EventCountdown";
 import { useCoverImage } from "@/hooks/useCoverImage";
 import { useAccount } from "wagmi";
 import {
@@ -346,6 +347,10 @@ export default function EventDetailPage({
               transition={{ delay: 0.3, duration: 0.5 }}
               className="space-y-6"
             >
+              {event.status === "upcoming" && (
+                <EventCountdown startDate={event.startDate} />
+              )}
+
               <div className="glass rounded-2xl p-6 sticky top-24 space-y-6">
                 <h2 className="text-lg font-semibold">RSVP</h2>
 
