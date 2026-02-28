@@ -43,6 +43,7 @@ import { createCoverImage } from "@/lib/arkiv/images";
 import { EVENT_CATEGORIES, LOCATION_TYPES } from "@/lib/utils/constants";
 import { CoverImageUpload } from "@/components/events/CoverImageUpload";
 import { createImagePreviewUrl } from "@/lib/utils/imageCompression";
+import { geocodeLocation } from "@/lib/utils/geocode";
 import type { CompressedImage } from "@/lib/utils/imageCompression";
 import type { EventPayload, SocialLinks } from "@/lib/arkiv/types";
 
@@ -188,6 +189,15 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
         externalUrl: data.externalUrl || undefined,
         socialLinks: hasSocialLinks ? socialLinks : undefined,
       };
+
+      // Geocode location for map display
+      if (data.locationType !== "online") {
+        const geo = await geocodeLocation(data.location, data.venue);
+        if (geo) {
+          payload.latitude = geo.latitude;
+          payload.longitude = geo.longitude;
+        }
+      }
 
       const city = extractCity(data.location);
 

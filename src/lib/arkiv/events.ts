@@ -237,5 +237,7 @@ function parseEventEntity(entity: any): EventEntity {
     category: (attrs.category as EventCategory) ?? "meetup",
     locationType: (attrs.locationType as LocationType) ?? "in-person",
     city: (attrs.city as string) ?? "",
+    latitude: data.latitude,
+    longitude: data.longitude,
   };
 }

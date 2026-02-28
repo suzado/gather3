@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { useAccount } from "wagmi";
-import { Plus, LayoutDashboard } from "lucide-react";
+import { Plus, LayoutDashboard, Map } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
@@ -29,6 +29,12 @@ export function Header() {
               <Link href="/events">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   Discover
+                </Button>
+              </Link>
+              <Link href="/events/map">
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  <Map className="mr-1 h-4 w-4" />
+                  Map
                 </Button>
               </Link>
               {isConnected && (

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight, Search, List, MapPin } from "lucide-react";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { EventFilters } from "@/components/events/EventFilters";
 import { EventGrid } from "@/components/events/EventGrid";
@@ -46,15 +46,38 @@ export default function EventsPage() {
                   Browse decentralized events owned by their organizers.
                 </p>
               </div>
-              <Link href="/events/create">
-                <Button
-                  variant="outline"
-                  className="border-white/10 hover:bg-white/5"
-                >
-                  Create Event
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-violet-500/50 bg-violet-500/10 text-violet-400"
+                    disabled
+                  >
+                    <List className="mr-1 h-4 w-4" />
+                    List
+                  </Button>
+                  <Link href="/events/map">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-white/10 hover:bg-white/5"
+                    >
+                      <MapPin className="mr-1 h-4 w-4" />
+                      Map
+                    </Button>
+                  </Link>
+                </div>
+                <Link href="/events/create">
+                  <Button
+                    variant="outline"
+                    className="border-white/10 hover:bg-white/5"
+                  >
+                    Create Event
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
             </div>
 
             {/* Filters */}

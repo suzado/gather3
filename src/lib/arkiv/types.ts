@@ -38,6 +38,8 @@ export interface EventPayload {
   tags: string[];
   externalUrl?: string;
   socialLinks?: SocialLinks;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface RsvpPayload {
@@ -86,6 +88,8 @@ export interface EventEntity {
   locationType: LocationType;
   city: string;
   rsvpCount?: number;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface RsvpEntity {
