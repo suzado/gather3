@@ -18,6 +18,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { PageTransition } from "@/components/layout/PageTransition";
 import { EventStatusBadge } from "@/components/events/EventStatusBadge";
@@ -88,15 +93,22 @@ export default function DashboardPage() {
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="rsvps" className="gap-2 data-[state=active]:bg-violet-500/20">
-                <Ticket className="h-4 w-4" />
-                My RSVPs
-                {rsvps.length > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                    {rsvps.length}
-                  </Badge>
-                )}
-              </TabsTrigger>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="rsvps" className="gap-2 data-[state=active]:bg-violet-500/20">
+                    <Ticket className="h-4 w-4" />
+                    My RSVPs
+                    {rsvps.length > 0 && (
+                      <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
+                        {rsvps.length}
+                      </Badge>
+                    )}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent>
+                  Events you confirmed attendance for
+                </TooltipContent>
+              </Tooltip>
             </TabsList>
 
             <TabsContent value="events">

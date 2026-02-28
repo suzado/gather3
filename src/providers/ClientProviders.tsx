@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Web3ProviderInner = dynamic(
   () => import("./Web3Provider").then((mod) => mod.Web3Provider),
@@ -8,5 +9,9 @@ const Web3ProviderInner = dynamic(
 );
 
 export function ClientProviders({ children }: { children: React.ReactNode }) {
-  return <Web3ProviderInner>{children}</Web3ProviderInner>;
+  return (
+    <Web3ProviderInner>
+      <TooltipProvider>{children}</TooltipProvider>
+    </Web3ProviderInner>
+  );
 }

@@ -6,6 +6,11 @@ import { Loader2, Check, X } from "lucide-react";
 import { useConnectModal } from "@rainbow-me/rainbowkit";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useArkivWallet, useWalletAddress } from "@/hooks/useArkivClient";
 import { createRsvp, cancelRsvp } from "@/lib/arkiv/rsvp";
 import { shortenAddress } from "@/lib/utils/avatars";
@@ -33,13 +38,20 @@ export function RsvpButton({
   // Not connected
   if (!walletAddress) {
     return (
-      <Button
-        size="lg"
-        onClick={openConnectModal}
-        className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet"
-      >
-        Connect Wallet to RSVP
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="lg"
+            onClick={openConnectModal}
+            className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet"
+          >
+            Connect Wallet to RSVP
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          RSVP – Confirm your attendance at this event
+        </TooltipContent>
+      </Tooltip>
     );
   }
 
@@ -96,25 +108,32 @@ export function RsvpButton({
           <Check className="h-4 w-4" />
           <span>You are attending this event</span>
         </div>
-        <Button
-          size="lg"
-          variant="outline"
-          onClick={handleCancel}
-          disabled={loading || disabled}
-          className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
-        >
-          {loading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Cancelling...
-            </>
-          ) : (
-            <>
-              <X className="h-4 w-4" />
-              Cancel RSVP
-            </>
-          )}
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={loading || disabled}
+              className="w-full border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/30"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Cancelling...
+                </>
+              ) : (
+                <>
+                  <X className="h-4 w-4" />
+                  Cancel RSVP
+                </>
+              )}
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            Cancel your attendance confirmation
+          </TooltipContent>
+        </Tooltip>
       </motion.div>
     );
   }
@@ -126,21 +145,28 @@ export function RsvpButton({
       animate={{ opacity: 1, scale: 1 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
     >
-      <Button
-        size="lg"
-        onClick={handleRsvp}
-        disabled={loading || disabled}
-        className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet"
-      >
-        {loading ? (
-          <>
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Confirming...
-          </>
-        ) : (
-          "RSVP"
-        )}
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="lg"
+            onClick={handleRsvp}
+            disabled={loading || disabled}
+            className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Confirming...
+              </>
+            ) : (
+              "RSVP"
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          RSVP – Confirm your attendance at this event
+        </TooltipContent>
+      </Tooltip>
     </motion.div>
   );
 }

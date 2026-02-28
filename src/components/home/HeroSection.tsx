@@ -5,6 +5,11 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Calendar, Users, Zap, ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { useMousePosition } from "@/hooks/useMousePosition";
 import { HeroParticles } from "./HeroParticles";
 import { MouseSpotlight } from "./MouseSpotlight";
@@ -86,8 +91,19 @@ export function HeroSection() {
             style={{ y: subtitleY }}
             className="mt-6 text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
           >
-            A web3-native event platform where events, RSVPs, and attendance
-            are owned by users — not platforms. No middlemen, no lock-in.
+            A web3-native event platform where events,{" "}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="underline decoration-dotted underline-offset-4 cursor-help">
+                  RSVPs
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                RSVP – Attendance confirmations
+              </TooltipContent>
+            </Tooltip>
+            , and attendance are owned by users — not platforms. No middlemen,
+            no lock-in.
           </motion.p>
 
           {/* CTA buttons */}
