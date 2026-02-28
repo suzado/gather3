@@ -17,6 +17,10 @@ import {
 } from "@/lib/utils/imageCompression";
 import { COVER_IMAGE_MAX_FILE_SIZE } from "@/lib/utils/constants";
 import type { CompressedImage } from "@/lib/utils/imageCompression";
+import {
+  IMAGE_STYLES,
+  type ImageStyleKey,
+} from "@/app/api/generate-cover/route";
 
 interface CoverImageUploadProps {
   onImageReady: (image: CompressedImage | null) => void;
@@ -51,6 +55,8 @@ export function CoverImageUpload({
   const [compressionInfo, setCompressionInfo] = useState<string | null>(
     null
   );
+  const [selectedStyle, setSelectedStyle] =
+    useState<ImageStyleKey>("abstract-artistic");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const processFile = useCallback(
@@ -137,6 +143,7 @@ export function CoverImageUpload({
           title: eventTitle,
           description: eventDescription || "",
           category: eventCategory || "",
+          style: selectedStyle,
         }),
       });
 
@@ -165,7 +172,7 @@ export function CoverImageUpload({
     } finally {
       setIsGenerating(false);
     }
-  }, [eventTitle, eventDescription, eventCategory, processFile]);
+  }, [eventTitle, eventDescription, eventCategory, selectedStyle, processFile]);
 
   return (
     <div className="space-y-3">
@@ -257,6 +264,21 @@ export function CoverImageUpload({
           {compressionInfo}
         </p>
       )}
+
+      <select
+        value={selectedStyle}
+        onChange={(e) =>
+          setSelectedStyle(e.target.value as ImageStyleKey)
+        }
+        disabled={isGenerating}
+        className="w-full h-9 rounded-md border border-white/10 bg-transparent px-3 text-sm text-white focus:outline-none focus:ring-1 focus:ring-violet-500/50"
+      >
+        {Object.entries(IMAGE_STYLES).map(([key, { label }]) => (
+          <option key={key} value={key} className="bg-zinc-900">
+            {label}
+          </option>
+        ))}
+      </select>
 
       <Button
         type="button"
