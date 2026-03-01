@@ -7,6 +7,7 @@ import { Plus, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/common/Logo";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { trackEvent } from "@/lib/utils/umami";
 
 export function Header() {
   const { isConnected } = useAccount();
@@ -26,7 +27,7 @@ export function Header() {
               <span className="text-lg font-bold gradient-text">Gather3</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
-              <Link href="/events">
+              <Link href="/events" onClick={() => trackEvent("header_discover_click")}>
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                   Discover
                 </Button>
@@ -41,13 +42,13 @@ export function Header() {
               */}
               {isConnected && (
                 <>
-                  <Link href="/events/create">
+                  <Link href="/events/create" onClick={() => trackEvent("header_create_event_click")}>
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                       <Plus className="mr-1 h-4 w-4" />
                       Create Event
                     </Button>
                   </Link>
-                  <Link href="/dashboard">
+                  <Link href="/dashboard" onClick={() => trackEvent("header_dashboard_click")}>
                     <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
                       <LayoutDashboard className="mr-1 h-4 w-4" />
                       Dashboard

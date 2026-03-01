@@ -43,6 +43,7 @@ import {
   timeUntilEvent,
 } from "@/lib/utils/dates";
 import type { Hex } from "viem";
+import { trackEvent } from "@/lib/utils/umami";
 
 const categoryGradients: Record<string, string> = {
   conference: "from-violet-600/20 to-purple-600/20",
@@ -474,6 +475,7 @@ function SocialLinksSection({ links }: { links: SocialLinks }) {
           href={links[platform.key]}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => trackEvent("event_social_link_click", { platform: platform.key })}
           className="inline-flex items-center gap-2 rounded-lg glass px-3 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
           {platform.icon}

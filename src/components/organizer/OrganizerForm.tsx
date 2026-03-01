@@ -21,6 +21,7 @@ import {
 import { useArkivWallet, useWalletAddress } from "@/hooks/useArkivClient";
 import { createOrganizer, updateOrganizer } from "@/lib/arkiv/organizer";
 import type { OrganizerEntity, OrganizerPayload } from "@/lib/arkiv/types";
+import { trackEvent } from "@/lib/utils/umami";
 
 const organizerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters").max(50),
@@ -76,10 +77,12 @@ export function OrganizerForm({ existingOrganizer, onSuccess }: OrganizerFormPro
           payload,
           walletAddress
         );
+        trackEvent("organizer_profile_update");
         toast.success("Profile updated!");
         onSuccess(existingOrganizer.entityKey);
       } else {
         const { entityKey } = await createOrganizer(arkivWallet, payload, walletAddress);
+        trackEvent("organizer_profile_create");
         toast.success("Organizer profile created!");
         onSuccess(entityKey);
       }

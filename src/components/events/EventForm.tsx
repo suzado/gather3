@@ -46,6 +46,7 @@ import { createImagePreviewUrl } from "@/lib/utils/imageCompression";
 import { geocodeLocation } from "@/lib/utils/geocode";
 import type { CompressedImage } from "@/lib/utils/imageCompression";
 import type { EventPayload, SocialLinks } from "@/lib/arkiv/types";
+import { trackEvent } from "@/lib/utils/umami";
 
 const eventSchema = z
   .object({
@@ -136,7 +137,10 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
   async function validateAndNext() {
     const fields = fieldsForStep[step];
     const valid = await form.trigger(fields);
-    if (valid) setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    if (valid) {
+      trackEvent("event_form_step_advance", { from_step: step, to_step: step + 1 });
+      setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    }
   }
 
   async function onSubmit(data: EventFormData) {
@@ -145,6 +149,7 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
       return;
     }
 
+    trackEvent("event_form_submit", { category: data.category });
     setIsSubmitting(true);
     try {
       const startTimestamp = Math.floor(
@@ -210,6 +215,7 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
         city
       );
 
+      trackEvent("event_created", { eventKey: entityKey, category: data.category });
       toast.success("Event created successfully!");
       onSuccess(entityKey);
     } catch (err) {
@@ -314,7 +320,10 @@ export function EventForm({ organizerKey, onSuccess }: EventFormProps) {
             <Button
               type="button"
               variant="ghost"
-              onClick={() => setStep((s) => Math.max(s - 1, 0))}
+              onClick={() => {
+                trackEvent("event_form_step_back", { step });
+                setStep((s) => Math.max(s - 1, 0));
+              }}
               disabled={step === 0}
             >
               <ArrowLeft className="mr-2 h-4 w-4" />

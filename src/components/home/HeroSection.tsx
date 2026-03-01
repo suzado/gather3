@@ -18,6 +18,7 @@ import { HeroGlobeDynamic } from "./HeroGlobeDynamic";
 import { GlobeGlow } from "./GlobeGlow";
 import { GlobeArcs } from "./GlobeArcs";
 import { GlobeEventCards } from "./GlobeEventCards";
+import { trackEvent } from "@/lib/utils/umami";
 
 const stats = [
   { label: "Decentralized", value: "100%", icon: Zap },
@@ -120,7 +121,7 @@ export function HeroSection() {
               transition={{ delay: 1.2, duration: 0.5 }}
               className="mt-10 flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
             >
-              <Link href="/events">
+              <Link href="/events" onClick={() => trackEvent("hero_discover_events_click")}>
                 <Button
                   size="lg"
                   className="relative overflow-hidden bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet px-8 text-base shine-sweep"
@@ -129,7 +130,7 @@ export function HeroSection() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="/events/create">
+              <Link href="/events/create" onClick={() => trackEvent("hero_create_event_click")}>
                 <Button
                   size="lg"
                   variant="outline"

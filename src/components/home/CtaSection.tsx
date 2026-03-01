@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { trackEvent } from "@/lib/utils/umami";
 
 export function CtaSection() {
   return (
@@ -40,7 +41,7 @@ export function CtaSection() {
               Create your first event in minutes. All data stored on Arkiv —
               owned by you, forever.
             </p>
-            <Link href="/events/create">
+            <Link href="/events/create" onClick={() => trackEvent("cta_get_started_click")}>
               <Button
                 size="lg"
                 className="relative overflow-hidden bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet shine-sweep"

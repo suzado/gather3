@@ -39,6 +39,7 @@ import type { CompressedImage } from "@/lib/utils/imageCompression";
 import type { EventEntity } from "@/lib/arkiv/types";
 import type { EventStatus } from "@/lib/utils/constants";
 import type { Hex } from "viem";
+import { trackEvent } from "@/lib/utils/umami";
 
 interface EventManagePanelProps {
   event: EventEntity;
@@ -71,6 +72,7 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
 
   async function handleStatusChange(newStatus: EventStatus) {
     if (!arkivWallet) return;
+    trackEvent("event_status_change", { from: event.status, to: newStatus });
     setLoading(newStatus);
     try {
       await updateEventStatus(arkivWallet, event.entityKey, newStatus);
@@ -86,6 +88,7 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
 
   async function handleDelete() {
     if (!arkivWallet) return;
+    trackEvent("event_deleted");
     setLoading("delete");
     try {
       await deleteEvent(arkivWallet, event.entityKey);
@@ -113,6 +116,7 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
         event.entityKey,
         transferAddress as Hex
       );
+      trackEvent("event_ownership_transferred");
       toast.success("Event ownership transferred!");
       onUpdate();
       setTransferOpen(false);
@@ -169,6 +173,7 @@ export function EventManagePanel({ event, onUpdate }: EventManagePanelProps) {
         event.city
       );
 
+      trackEvent("event_cover_image_updated");
       toast.success("Cover image updated!");
       setCoverImageData(null);
       onUpdate();

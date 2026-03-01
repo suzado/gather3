@@ -16,6 +16,7 @@ import { createRsvp, cancelRsvp } from "@/lib/arkiv/rsvp";
 import { shortenAddress } from "@/lib/utils/avatars";
 import type { RsvpEntity } from "@/lib/arkiv/types";
 import type { Hex } from "viem";
+import { trackEvent } from "@/lib/utils/umami";
 
 interface RsvpButtonProps {
   eventKey: Hex;
@@ -42,7 +43,10 @@ export function RsvpButton({
         <TooltipTrigger asChild>
           <Button
             size="lg"
-            onClick={openConnectModal}
+            onClick={() => {
+              trackEvent("wallet_connect_for_rsvp");
+              openConnectModal?.();
+            }}
             className="w-full bg-gradient-to-r from-violet-600 to-blue-600 hover:from-violet-500 hover:to-blue-500 text-white glow-violet"
           >
             Connect Wallet to RSVP
@@ -61,10 +65,12 @@ export function RsvpButton({
       return;
     }
 
+    trackEvent("rsvp_click", { action: "rsvp" });
     setLoading(true);
     try {
       const displayName = shortenAddress(walletAddress);
       await createRsvp(arkivWallet, eventKey, displayName, "", walletAddress);
+      trackEvent("rsvp_confirmed", { eventKey });
       toast.success("RSVP confirmed! See you there.");
       onRsvpChange();
     } catch (err) {
@@ -79,9 +85,11 @@ export function RsvpButton({
   const handleCancel = async () => {
     if (!arkivWallet || !userRsvp) return;
 
+    trackEvent("rsvp_click", { action: "cancel" });
     setLoading(true);
     try {
       await cancelRsvp(arkivWallet, userRsvp.entityKey);
+      trackEvent("rsvp_cancelled", { eventKey });
       toast.success("RSVP cancelled.");
       onRsvpChange();
     } catch (err) {

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useEvents } from "@/hooks/useEvents";
 import { useFuseSearch } from "@/hooks/useFuseSearch";
 import type { EventFilters as EventFiltersType } from "@/lib/arkiv/types";
+import { trackEvent } from "@/lib/utils/umami";
 
 export default function EventsPage() {
   const [filters, setFilters] = useState<EventFiltersType>({});
@@ -131,6 +132,7 @@ export default function EventsPage() {
                 <Button
                   variant="outline"
                   onClick={() => {
+                    trackEvent("event_filters_cleared");
                     setFilters({});
                     setSearchQuery("");
                   }}

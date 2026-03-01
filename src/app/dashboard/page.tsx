@@ -35,6 +35,7 @@ import { useMyRsvps } from "@/hooks/useMyRsvps";
 import { formatEventDateRange } from "@/lib/utils/dates";
 import type { EventEntity } from "@/lib/arkiv/types";
 import type { Hex } from "viem";
+import { trackEvent } from "@/lib/utils/umami";
 
 export default function DashboardPage() {
   const { isConnected } = useAccount();
@@ -82,7 +83,7 @@ export default function DashboardPage() {
             </Link>
           </div>
 
-          <Tabs defaultValue="events" className="space-y-6">
+          <Tabs defaultValue="events" className="space-y-6" onValueChange={(tab) => trackEvent("dashboard_tab_switch", { to_tab: tab })}>
             <TabsList className="glass border border-white/10">
               <TabsTrigger value="events" className="gap-2 data-[state=active]:bg-violet-500/20">
                 <Calendar className="h-4 w-4" />

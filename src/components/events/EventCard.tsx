@@ -9,6 +9,7 @@ import type { EventEntity } from "@/lib/arkiv/types";
 import { useCoverImage } from "@/hooks/useCoverImage";
 import { formatEventDate, formatEventTime } from "@/lib/utils/dates";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/utils/umami";
 
 interface EventCardProps {
   event: EventEntity;
@@ -48,7 +49,7 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4, ease: "easeOut" }}
     >
-      <Link href={`/events/${event.entityKey}`} className="block group">
+      <Link href={`/events/${event.entityKey}`} className="block group" onClick={() => trackEvent("event_card_click", { category: event.category })}>
         <motion.article
           whileHover={{ y: -4 }}
           transition={{ type: "spring", stiffness: 300, damping: 20 }}

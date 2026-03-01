@@ -6,6 +6,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "sonner";
 import { RpcHealthBanner } from "@/components/common/RpcHealthBanner";
+import Script from "next/script";
 
 const inter = Inter({
   variable: "--font-geist-sans",
@@ -31,6 +32,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          defer
+          src="https://um.gscribe.ai/script.js"
+          data-website-id="dfb13024-2f3c-415c-b985-73c63fe449f8"
+          strategy="afterInteractive"
+        />
+      </head>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} antialiased min-h-screen flex flex-col`}
       >

@@ -13,6 +13,7 @@ import {
   buildGoogleCalendarUrl,
 } from "@/lib/utils/calendar";
 import type { IcsEventData } from "@/lib/utils/calendar";
+import { trackEvent } from "@/lib/utils/umami";
 
 interface AddToCalendarButtonProps {
   event: IcsEventData;
@@ -22,11 +23,13 @@ export function AddToCalendarButton({ event }: AddToCalendarButtonProps) {
   const [open, setOpen] = useState(false);
 
   const handleIcsDownload = () => {
+    trackEvent("event_add_to_calendar", { format: "ics" });
     downloadIcsFile(event);
     setOpen(false);
   };
 
   const handleGoogleCalendar = () => {
+    trackEvent("event_add_to_calendar", { format: "google" });
     window.open(buildGoogleCalendarUrl(event), "_blank", "noopener,noreferrer");
     setOpen(false);
   };

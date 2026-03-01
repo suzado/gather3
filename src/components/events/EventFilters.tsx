@@ -7,6 +7,7 @@ import type { EventCategory, LocationType, EventStatus } from "@/lib/utils/const
 import type { EventFilters as EventFiltersType } from "@/lib/arkiv/types";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { trackEvent } from "@/lib/utils/umami";
 
 interface EventFiltersProps {
   filters: EventFiltersType;
@@ -53,6 +54,8 @@ function FilterChip({ label, selected, onClick }: FilterChipProps) {
 
 export function EventFilters({ filters, onFiltersChange, searchQuery, onSearchChange }: EventFiltersProps) {
   const toggleCategory = (value: EventCategory) => {
+    const selected = filters.category !== value;
+    trackEvent("event_filter_category", { category: value, selected });
     onFiltersChange({
       ...filters,
       category: filters.category === value ? undefined : value,
@@ -60,6 +63,8 @@ export function EventFilters({ filters, onFiltersChange, searchQuery, onSearchCh
   };
 
   const toggleLocationType = (value: LocationType) => {
+    const selected = filters.locationType !== value;
+    trackEvent("event_filter_location_type", { location_type: value, selected });
     onFiltersChange({
       ...filters,
       locationType: filters.locationType === value ? undefined : value,
@@ -67,6 +72,8 @@ export function EventFilters({ filters, onFiltersChange, searchQuery, onSearchCh
   };
 
   const toggleStatus = (value: EventStatus) => {
+    const selected = filters.status !== value;
+    trackEvent("event_filter_status", { status: value, selected });
     onFiltersChange({
       ...filters,
       status: filters.status === value ? undefined : value,
@@ -82,7 +89,10 @@ export function EventFilters({ filters, onFiltersChange, searchQuery, onSearchCh
           type="text"
           placeholder="Search events by name, description, tags, location..."
           value={searchQuery}
-          onChange={(e) => onSearchChange(e.target.value)}
+          onChange={(e) => {
+            onSearchChange(e.target.value);
+            if (e.target.value.length > 2) trackEvent("event_search", { query: e.target.value });
+          }}
           className={cn(
             "pl-10 pr-10 h-10",
             "bg-white/[0.03] border-white/[0.08]",
