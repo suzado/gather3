@@ -31,7 +31,7 @@ export default function OrganizerSetupPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-20"
+            className="text-center flex flex-col items-center justify-center min-h-[60vh]"
           >
             <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-500/10 mb-6">
               <Wallet className="h-8 w-8 text-violet-400" />
