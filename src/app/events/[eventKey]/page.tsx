@@ -32,6 +32,7 @@ import { useWalletAddress } from "@/hooks/useArkivClient";
 import { useLiveRsvps } from "@/hooks/useLiveRsvps";
 import { LiveRsvpFeed } from "@/components/rsvp/LiveRsvpFeed";
 import { EventManagePanel } from "@/components/events/EventManagePanel";
+import { CheckInPanel } from "@/components/attendance/CheckInPanel";
 import { AddToCalendarButton } from "@/components/events/AddToCalendarButton";
 import { EventCountdown } from "@/components/events/EventCountdown";
 import { useCoverImage } from "@/hooks/useCoverImage";
@@ -345,6 +346,15 @@ export default function EventDetailPage({
                   />
                 )}
               </div>
+
+              {/* Check-in Panel (owner only, live/ended events) */}
+              {isOwner && (event.status === "live" || event.status === "ended") && (
+                <CheckInPanel
+                  event={event}
+                  rsvps={rsvps}
+                  rsvpCount={rsvpCount}
+                />
+              )}
             </motion.div>
 
             {/* Right column: RSVP card */}
