@@ -56,9 +56,9 @@ export function HeroSection() {
 
       <motion.div
         style={{ opacity: heroOpacity }}
-        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 sm:py-28 lg:py-36"
+        className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 sm:py-32 lg:py-36"
       >
-        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
           {/* Left column — text content */}
           <div className="text-center lg:text-left">
             {/* Badge */}
@@ -145,7 +145,7 @@ export function HeroSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1.4, duration: 0.6 }}
-              className="mt-12 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0"
+              className="mt-16 lg:mt-12 grid grid-cols-3 gap-4 max-w-lg mx-auto lg:mx-0"
             >
               {stats.map((stat, i) => (
                 <motion.div
@@ -165,15 +165,15 @@ export function HeroSection() {
             </motion.div>
           </div>
 
-          {/* Right column — 3D Globe with overlays */}
+          {/* Right column — 3D Globe with overlays (desktop only) */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
             style={{ y: globeY }}
-            className="relative flex items-center justify-center lg:justify-end"
+            className="relative hidden lg:flex items-center justify-end"
           >
-            <div className="relative w-full max-w-[280px] sm:max-w-[400px] lg:max-w-[600px] mx-auto lg:mx-0">
+            <div className="relative w-full max-w-[600px]">
               <GlobeGlow />
               <GlobeArcs />
               <HeroGlobeDynamic
