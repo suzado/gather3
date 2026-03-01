@@ -11,6 +11,30 @@ Gather3 is a decentralized alternative to Luma/Eventbrite where:
 - **Ownership transfers** allow events to be handed off between organizers
 - **All data** lives on Arkiv's decentralized storage with automatic expiration
 
+## Screenshots
+
+### Landing Page
+<p align="center">
+  <img src="docs/screenshots/01-hero-1.png" alt="Gather3 landing page with 3D globe" width="100%">
+</p>
+
+### Discover Events
+<p align="center">
+  <img src="docs/screenshots/04-events-browse.png" alt="Browse events with filters" width="100%">
+</p>
+
+### Event Detail
+<p align="center">
+  <img src="docs/screenshots/06-event-detail.png" alt="Event detail page" width="100%">
+</p>
+
+### Responsive Design
+<p align="center">
+  <img src="docs/screenshots/08-mobile-hero.png" alt="Mobile landing page" width="250">
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/09-mobile-events.png" alt="Mobile events page" width="250">
+</p>
+
 ## Arkiv Integration
 
 Gather3 demonstrates deep Arkiv SDK integration across every feature:
