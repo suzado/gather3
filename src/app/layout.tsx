@@ -19,10 +19,24 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://gather3.club"),
   title: "Gather3 — Own Your Events",
   description:
     "A web3-native event platform where events, RSVPs, and attendance are owned by users, not platforms. Built on Arkiv.",
   keywords: ["web3", "events", "arkiv", "decentralized", "RSVP", "blockchain"],
+  openGraph: {
+    title: "Gather3 — Own Your Events",
+    description:
+      "A web3-native event platform where events, RSVPs, and attendance are owned by users, not platforms. Built on Arkiv.",
+    siteName: "Gather3",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Gather3 — Own Your Events",
+    description:
+      "A web3-native event platform where events, RSVPs, and attendance are owned by users, not platforms. Built on Arkiv.",
+  },
 };
 
 export default function RootLayout({

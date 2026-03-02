@@ -3,7 +3,7 @@ import {
   createWalletClient as createArkivWalletClient,
   http,
 } from "@arkiv-network/sdk";
-import { arkivChain } from "@/lib/wallet/config";
+import { arkivChain } from "@/lib/wallet/chain";
 import { custom } from "viem";
 import type { WalletClient } from "viem";
 

@@ -1,4 +1,4 @@
-import { arkivChain } from "@/lib/wallet/config";
+import { arkivChain } from "@/lib/wallet/chain";
 
 export const APP_ID = "gather3.club";
 export const FAUCET_URL = `https://${arkivChain.network}.hoodi.arkiv.network/faucet/`;
