@@ -32,6 +32,11 @@ export function Header() {
                   Discover
                 </Button>
               </Link>
+              <Link href="/about" onClick={() => trackEvent("header_about_click")}>
+                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                  Project Overview
+                </Button>
+              </Link>
               {/* Map link hidden until geocoding is pre-computed
               <Link href="/events/map">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
