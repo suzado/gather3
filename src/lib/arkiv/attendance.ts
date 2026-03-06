@@ -37,8 +37,7 @@ export async function checkInAttendee(
 }
 
 export async function getAttendanceForEvent(
-  eventKey: Hex,
-  limit = 200
+  eventKey: Hex
 ): Promise<AttendanceEntity[]> {
   const result = await trackedFetch(
     arkivPublic
@@ -54,7 +53,7 @@ export async function getAttendanceForEvent(
       .fetch()
   );
 
-  return result.entities.map(parseAttendanceEntity).slice(0, limit);
+  return result.entities.map(parseAttendanceEntity);
 }
 
 export async function hasAttendeeCheckedIn(

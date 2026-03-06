@@ -184,7 +184,7 @@ export async function queryEvents(
   }
 
   const result = await trackedFetch(query.fetch());
-  const events = result.entities.map(parseEventEntity).slice(0, limit);
+  const events = result.entities.map(parseEventEntity);
 
   // Fetch RSVP counts in parallel for all events
   const counts = await Promise.all(

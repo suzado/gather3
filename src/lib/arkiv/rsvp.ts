@@ -78,7 +78,7 @@ export async function getRsvpsForEvent(
       .fetch()
   );
 
-  return result.entities.map(parseRsvpEntity).slice(0, limit);
+  return result.entities.map(parseRsvpEntity);
 }
 
 export async function getMyRsvps(
@@ -101,7 +101,7 @@ export async function getMyRsvps(
       .fetch()
   );
 
-  return result.entities.map(parseRsvpEntity).slice(0, limit);
+  return result.entities.map(parseRsvpEntity);
 }
 
 export async function hasUserRsvpd(
@@ -143,7 +143,7 @@ export async function queryRecentRsvps(limit = 10): Promise<RsvpEntity[]> {
       .fetch()
   );
 
-  return result.entities.map(parseRsvpEntity).slice(0, limit);
+  return result.entities.map(parseRsvpEntity);
 }
 
 export async function getRsvpCount(eventKey: Hex): Promise<number> {
